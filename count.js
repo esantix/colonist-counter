@@ -7,6 +7,7 @@ topBar.appendChild(button);
 document.body.insertBefore(topBar, document.body.firstChild);
 
 button.addEventListener('click', buttonClick);
+
 function buttonClick() {
 
     let data = {}
@@ -17,7 +18,6 @@ function buttonClick() {
         const child = content.children[i];
         let actions = parseMsg(child)
 
-
         // action interpretation
         for (let j = 0; j < actions.length; j++) {
 
@@ -25,7 +25,7 @@ function buttonClick() {
             let operation = actions[j][1];
             let resource = actions[j][2];
 
-            console.log([user, operation, resource])
+            //console.log([user, operation, resource])
 
             if (user ) {
                 if (!(user in data)) {
@@ -49,73 +49,89 @@ function buttonClick() {
                 data[user]['TOTAL'] -= 1;
             }
         }
-
-
-
-
-
-
     }
     console.log(data)
 }
 
-// msg -> [(user, '+', 'ore'), (),...]
 
+const me="esantix"
+
+// in_game_ab_left
 
 function parseMsg(htmlMsg) {
+    //
+    // Return [(user, '+', resource), ...]
     var actions = []
 
     try {
-        var user = htmlMsg.children[1].children[0].innerText; // no funciona para You Stole
-        let msgData = htmlMsg.childNodes[1]
-        let activity = msgData.childNodes[1].textContent.trim();
-        console.log(activity)
+        let msgCtn =  htmlMsg.childNodes[1].childNodes;
+        var user = htmlMsg.children[1].children[0].innerText.trim(); // no funciona para You Stole
 
 
-        if (activity == 'received starting resources') {
-            for (let i = 2; i < msgData.childNodes.length; i++) {
-                let resource = msgData.childNodes[i].alt;
+        if (htmlMsg.innerText.trim().startsWith('You stole')){ // You steal TODO: identify user mapping
+
+             let stoled = msgCtn[3].innerText;
+             let resource = msgCtn[1].alt;
+     
+             actions.push([me, '+', resource])
+             actions.push([stoled, '-', resource])
+
+        }
+        else{
+
+        let activity = msgCtn[1].textContent.trim();
+        //console.log(activity)
+      
+        if (activity == 'received starting resources') { // beginning
+            for (let i = 2; i < msgCtn.length; i++) {
+                let resource = msgCtn[i].alt;
                 actions.push([user,'+', resource])
             }
 
         }
         else 
-        if (activity == 'got') {
-            for (let i = 2; i < msgData.childNodes.length; i++) {
-                let resource = msgData.childNodes[i].alt;
+        if (activity == 'got' || activity == 'took from bank') { // by dice or Year of plenty
+            for (let i = 2; i < msgCtn.length; i++) {
+                let resource = msgCtn[i].alt;
                 actions.push([user, '+', resource])
             }
-
         }
         else 
-        if (activity == 'gave bank') {
+        if (activity == 'discarded') { // discard by 7
+            for (let i = 2; i < msgCtn.length; i++) {
+                let resource = msgCtn[i].alt;
+                actions.push([user, '-', resource])
+            }
+        }
+        else 
+        if (activity == 'gave bank') { // bank trade
             let op = '-'
-            for (let i = 2; i < msgData.childNodes.length; i++) {
-                if (msgData.childNodes[i].nodeType == 3) {
+            for (let i = 2; i < msgCtn.length; i++) {
+                if (msgCtn[i].nodeType == 3) {
                     op = '+'
                 }
                 else {
-                    let resource = msgData.childNodes[i].alt;
+                    let resource = msgCtn[i].alt;
                     actions.push([user, op, resource])
                 }
             }
         }
         else 
-        if (activity == 'traded'){
+        if (activity == 'traded'){ // Player trade
             
-            let l=parseInt(msgData.childNodes.length )-1;
-            let user2 = msgData.childNodes[l].innerText;
+            let l=parseInt(msgCtn.length )-1;
+            let user2 = msgCtn[l].innerText;
 
             let taker = user;
             let giver = user2;
           
-            for (let i = 2; i < msgData.childNodes.length-1; i++) {
-                if (msgData.childNodes[i].nodeType == 3) {
+            for (let i = 2; i < msgCtn.length-1; i++) {
+                if (msgCtn[i].nodeType == 3) {
                     taker = user2
                     giver = user
                 }
                 else {
-                    let resource = msgData.childNodes[i].alt;
+                    let resource = msgCtn[i].alt;
                    
                     actions.push([taker, '-', resource])
                     actions.push([giver, '+', resource])
@@ -123,8 +139,8 @@ function parseMsg(htmlMsg) {
             }
         }
         else 
-        if (activity == 'bought'){
-            let b_item = msgData.childNodes[2].alt;
+        if (activity == 'bought'){ // buy dev card
+            let b_item = msgCtn[2].alt;
             if (b_item == 'development card'){
                     actions.push([user, '-', 'wool'])
                     actions.push([user, '-', 'grain'])
@@ -132,8 +148,8 @@ function parseMsg(htmlMsg) {
             }          
         }
         else 
-        if (activity == 'built a'){
-            let b_item = msgData.childNodes[2].alt;
+        if (activity == 'built a'){  // Build infra
+            let b_item = msgCtn[2].alt;
             if (b_item == 'road'){
                     actions.push([user, '-', 'lumber'])
                     actions.push([user, '-', 'brick'])
@@ -152,19 +168,29 @@ function parseMsg(htmlMsg) {
                 actions.push([user, '-', 'grain'])
             }            
         }
+        
         else 
-        if (activity == 'You stole'){
-             console.log("you stole!")
+        if (activity == 'stole'){ 
+
+            let resource = msgCtn[2].alt;
+            console.log(`${user} stole ${resource}`)
+            
+            if( msgCtn.length == 4 ){ // stole you o You stol
+                actions.push([user, '+', resource])
+                actions.push([me, '-', resource])
+            }
+            else{
+                let stoled = msgCtn[4].innerText;
+                actions.push([user, '+', resource])
+                actions.push([stoled, '-', resource])
+                
+            }
+
+            
         }
 
-
-
-
-//discarded
-//stole
+    }
 // monopoly
-// +2
-// stole from You ?
 
 
 
