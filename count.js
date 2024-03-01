@@ -25,7 +25,7 @@ function buttonClick() {
             let operation = actions[j][1];
             let resource = actions[j][2];
 
-            //console.log([user, operation, resource])
+            console.log([user, operation, resource])
 
             if (user ) {
                 if (!(user in data)) {
@@ -80,7 +80,6 @@ function parseMsg(htmlMsg) {
         else{
 
         let activity = msgCtn[1].textContent.trim();
-        //console.log(activity)
       
         if (activity == 'received starting resources') { // beginning
             for (let i = 2; i < msgCtn.length; i++) {
