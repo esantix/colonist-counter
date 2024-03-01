@@ -15,7 +15,7 @@ document.body.insertBefore(topBar, document.body.firstChild);
 button.addEventListener("click", activate);
 
 let data = {};
-let RESOURCES_LIST = ["lumber", "brick", "grain", "wool", "ore"];
+let RESOURCES_LIST = ["lumber", "brick", "grain", "wool", "ore", "card"]; //rescardback
 
 // Function to detect changes in the HTML block and get its content
 function observeChanges(targetNode) {
@@ -35,6 +35,7 @@ function observeChanges(targetNode) {
 
 function activate() {
   removeAds();
+  refreshData();
   const targetNode = document.getElementById("game-log-text");
   observeChanges(targetNode);
 }
@@ -59,13 +60,17 @@ function buildChart() {
       resource_div.style.display = "flex";
 
       let r_img = document.createElement("img");
-      r_img.setAttribute("src", `/dist/images/card_${RESOURCES_LIST[i]}.svg`);
+      if (RESOURCES_LIST[i] == "card") {
+        r_img.setAttribute("src", `/dist/images/card_rescardback.svg`);
+      } else {
+        r_img.setAttribute("src", `/dist/images/card_${RESOURCES_LIST[i]}.svg`);
+      }
       r_img.setAttribute("height", "23");
 
       let r_span = document.createElement("span");
-      r_span.innerText = user_data[RESOURCES_LIST[i]];
+      r_span.innerText = `:  ${user_data[RESOURCES_LIST[i]]}`;
 
-      if (user_data[RESOURCES_LIST[i]] > 0) {
+      if (user_data[RESOURCES_LIST[i]] != 0) {
         resource_div.appendChild(r_img);
         resource_div.appendChild(r_span);
         userdiv.appendChild(resource_div);
@@ -89,8 +94,6 @@ function refreshData() {
       let operation = actions[j][1];
       let resource = actions[j][2];
 
-      console.log([user, operation, resource]);
-
       if (user) {
         if (!(user in data)) {
           data[user] = {
@@ -99,29 +102,28 @@ function refreshData() {
             brick: 0,
             grain: 0,
             lumber: 0,
-            TOTAL: 0,
+            card: 0,
           };
         }
       }
 
       if (operation == "+") {
         data[user][resource] += 1;
-        data[user]["TOTAL"] += 1;
+        console.log([user, "+1", resource]);
       } else if (operation == "-") {
         data[user][resource] -= 1;
-        data[user]["TOTAL"] -= 1;
-      }else if ( typeof(operation) == 'number') {
+        console.log([user, "-1", resource]);
+      } else if (typeof operation == "number") {
         let amount = operation; // for monopoly operation is the number
         data[user][resource] += amount;
-      
-        
+        console.log([user, `+${amount}`, resource]);
+
         for (let user2 in data) {
-            if (user2 != user) {
-                data[user2][resource] = 0;
-            }
+          if (user2 != user) {
+            data[user2][resource] = 0;
+            console.log([user2, "=0", resource]);
           }
-
-
+        }
       }
     }
   }
@@ -141,20 +143,13 @@ function parseMsg(htmlMsg) {
     let msgCtn = htmlMsg.childNodes[1].childNodes;
     var user = htmlMsg.children[1].children[0].innerText.trim(); // no funciona para You Stole
 
-    if (is_monopoly) { 
-        is_monopoly = false;
-        console.log("-------------- Monopoly log ---")
-        console.log(msgCtn);
+    if (is_monopoly) {
+      is_monopoly = false;
+      let resource = msgCtn[2].alt;
+      let amount = parseInt(msgCtn[1].textContent.replace("stole", "").trim());
 
-        let resource = msgCtn[2].alt;
-        let amount = parseInt(msgCtn[1].textContent.replace('stole', '').trim());
-
-        actions.push([user, amount, resource]);
-
-       
-    }else
-
-    if (htmlMsg.innerText.trim().startsWith("You stole")) {
+      actions.push([user, amount, resource]);
+    } else if (htmlMsg.innerText.trim().startsWith("You stole")) {
       // You steal TODO: identify user mapping
 
       let stoled = msgCtn[3].innerText;
@@ -171,32 +166,12 @@ function parseMsg(htmlMsg) {
           let resource = msgCtn[i].alt;
           actions.push([user, "+", resource]);
         }
-      } 
-      
-      
-      
-      
-      
-      
-      else if (activity == "used") {
-            console.log("------------------------------------------------------")
-            let used_card = msgCtn[2].innerText.trim()
-            if (used_card == 'Monopoly'){
-                is_monopoly = true
-
-            }
-      }
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      
-      else if (activity == "got" || activity == "took from bank") {
+      } else if (activity == "used") {
+        let used_card = msgCtn[2].innerText.trim();
+        if (used_card == "Monopoly") {
+          is_monopoly = true;
+        }
+      } else if (activity == "got" || activity == "took from bank") {
         // by dice or Year of plenty
         for (let i = 2; i < msgCtn.length; i++) {
           let resource = msgCtn[i].alt;
@@ -267,7 +242,6 @@ function parseMsg(htmlMsg) {
         }
       } else if (activity == "stole") {
         let resource = msgCtn[2].alt;
-        console.log(`${user} stole ${resource}`);
 
         if (msgCtn.length == 4) {
           // stole you o You stol
@@ -275,6 +249,7 @@ function parseMsg(htmlMsg) {
           actions.push([me, "-", resource]);
         } else {
           let stoled = msgCtn[4].innerText;
+
           actions.push([user, "+", resource]);
           actions.push([stoled, "-", resource]);
         }
