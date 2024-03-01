@@ -1,0 +1,20 @@
+{
+
+    "description": "Bypass News Sites' Paywalls",
+    "manifest_version": 2,
+    "name": "Colonist",
+    "permissions": [
+      "cookies",
+      "storage",
+      "webRequest",
+      "webRequestBlocking",
+      "<all_urls>"
+    ],
+    "version": "1.8.1",
+    "content_scripts": [{
+        "matches": ["https://colonist.io/*"],
+        "js": ["count.js"]
+      }]
+
+} 
+
