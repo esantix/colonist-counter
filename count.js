@@ -54,21 +54,36 @@ function buildChart() {
     let user_data = data[user];
     let userdiv = document.createElement("div");
     userdiv.innerText = user;
+    userdiv.style.color = 'black'
 
     for (i = 0; i < RESOURCES_LIST.length; i++) {
       let resource_div = document.createElement("div");
       resource_div.style.display = "flex";
 
-      let r_img = document.createElement("img");
+      let r_img = document.createElement("img"); 
+      let r_span = document.createElement("span");
+    let n = user_data[RESOURCES_LIST[i]]
+    
+       
+
       if (RESOURCES_LIST[i] == "card") {
         r_img.setAttribute("src", `/dist/images/card_rescardback.svg`);
+        r_span.style.color = 'black'
+        r_span.innerText = `     ${(n<0?"":"+") + n}`;
+        (n<0?"":"+") + n
+
       } else {
         r_img.setAttribute("src", `/dist/images/card_${RESOURCES_LIST[i]}.svg`);
+         r_span.innerText = `    ${n}`;
+         r_span.style.color = 'white'
       }
       r_img.setAttribute("height", "23");
 
-      let r_span = document.createElement("span");
-      r_span.innerText = `:  ${user_data[RESOURCES_LIST[i]]}`;
+
+
+
+     
+     
 
       if (user_data[RESOURCES_LIST[i]] != 0) {
         resource_div.appendChild(r_img);
