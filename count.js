@@ -1,17 +1,93 @@
-// Create start button
+
+const spy = false;
 const topBar = document.createElement('div');
 topBar.classList.add('top-bar');
+
 const button = document.createElement('button');
-button.textContent = 'Get user resources';
+button.textContent = 'Activate Spy';
+
+const CHART = document.createElement('div');
+
+
 topBar.appendChild(button);
+topBar.appendChild(CHART);
+
 document.body.insertBefore(topBar, document.body.firstChild);
 
-button.addEventListener('click', buttonClick);
+button.addEventListener('click', activate);
 
-function buttonClick() {
+let data = {}
+let RESOURCES_LIST = [ 'lumber', 'brick','grain', 'wool','ore']
 
-    let data = {}
+// Function to detect changes in the HTML block and get its content
+function observeChanges(targetNode) {
+    // Create a new observer
+    const observer = new MutationObserver(function(mutationsList, observer) {
+        for(let mutation of mutationsList) {
+            if (mutation.type === 'childList') {
 
+
+                const content = targetNode.innerHTML;
+                refreshData() 
+             
+            }
+        }
+    });
+
+    const config = { attributes: true, childList: true, subtree: true };
+    observer.observe(targetNode, config);
+}
+
+function activate(){
+    const targetNode = document.getElementById("game-log-text");
+observeChanges(targetNode);
+}
+
+
+
+function removeAds(){
+    document.getElementById('in_game_ab_left').style.display = "none";
+    document.getElementById('in_game_ab_right').style.display = "none";
+}
+
+function buildChart(){
+    CHART.innerHTML = ""
+
+    Object.keys(data).forEach(user => {
+        let user_data = data[user];
+        let userdiv = document.createElement('div')
+        userdiv.innerText = user
+      
+        for( i=0; i<RESOURCES_LIST.length; i++){
+            let resource_div = document.createElement('div')
+            resource_div.style.display = "flex"
+
+            let r_img = document.createElement('img')
+            r_img.setAttribute('src', `/dist/images/card_${RESOURCES_LIST[i]}.svg`);
+            r_img.setAttribute('height', '23');
+
+            let r_span = document.createElement('span')
+            r_span.innerText = user_data[RESOURCES_LIST[i]]
+
+            if(user_data[RESOURCES_LIST[i]] > 0){
+                 resource_div.appendChild(r_img)
+            resource_div.appendChild(r_span)
+            userdiv.appendChild(resource_div)
+            }
+
+           
+        }
+     CHART.append(userdiv)
+    });
+
+}
+
+function refreshData() {
+    removeAds()
+
+
+
+    data = {}
     let content = document.getElementById("game-log-text");
 
     for (let i = 0; i < content.childNodes.length; i++) {
@@ -51,6 +127,7 @@ function buttonClick() {
         }
     }
     console.log(data)
+    buildChart()
 }
 
 
