@@ -1,5 +1,5 @@
 # Colonist resource counter
-Chrome extention for Colonit.io
+Chrome extention for colonist.io
 
 Keeps count of user resources by log inspection
 
