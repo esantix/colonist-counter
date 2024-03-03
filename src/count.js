@@ -26,13 +26,21 @@ document.body.insertBefore(topBar, document.body.firstChild);
 
 let data = {}; // User resources map
 let RESOURCES_LIST = ["lumber", "brick", "grain", "wool", "ore", "card"]; //rescardback
-const me = "esantix"; // TODO: read value from page
+let me = ""; 
 let is_monopoly = false; // Aux variable for parsing monopoly log
 
 function activate() {
     // Activate funtion. Needs to called after logs div has loaded
+
+    getUsername()
+
     removeAds();
     observeChanges();
+}
+
+function getUsername(){
+    me = document.getElementById('header_profile_username').innerText;
+    console.log(`username = ${me}`);
 }
 
 function removeAds() {
@@ -69,7 +77,9 @@ function buildChart() {
         let user_data = data[user];
         let userdiv = document.createElement("div");
         userdiv.innerText = user;
-        userdiv.style.color = 'black';
+
+        if (user == me){userdiv.style.color = 'blue';}else{userdiv.style.color = 'black';};
+        
 
         for (i = 0; i < RESOURCES_LIST.length; i++) {
 

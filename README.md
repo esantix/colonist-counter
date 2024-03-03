@@ -14,6 +14,3 @@ Keeps count of user resources by log inspection
 - Load unpacked
 - Select **src/** folder
 - Once game starts click on **Resource counter** button (See image)
-
-## Note
-Username scrapping not implemented yet. Must manually change ./src/count.js line 29 for accurate calculations
