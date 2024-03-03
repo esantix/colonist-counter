@@ -1,19 +1,31 @@
 {
-
-    "description": "Parse Colonist logs",
-    "manifest_version": 2,
-    "name": "Colonist assistant",
+  "manifest_version": 3,
+  "name": "Colonist assistant",
+  "description": "Keep count of player resources by log inspection",
+  "author":"santiago93echevarria@gmail.com",
     "permissions": [
       "cookies",
       "storage",
-      "webRequest",
-      "webRequestBlocking"
+      "webRequest"
     ],
     "version": "1.0.0",
     "content_scripts": [{
         "matches": ["https://colonist.io/*"],
         "js": ["count.js"]
-      }]
-
+      }],
+    "icons": {
+        "16": "icon.png",
+        "32": "icon.png",
+        "48": "icon.png",
+        "128": "icon.png"
+      },
+      "repository": {
+        "type": "git",
+        "url": "git+https://github.com/esantix/colonist-ext.git"
+      },
+      "license": "Apache 2.0",
+      "bugs": {
+        "url": "https://github.com/esantix/colonist-ext/issues"
+      }
 } 
 
