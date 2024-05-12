@@ -16,8 +16,16 @@ let observer_up = 0;
 
 // start button
 const button = document.createElement("button");
-button.textContent = "Resource counter";
-button.onclick = observeChanges
+button.textContent = "Enable counter";
+button.onclick = clickaction
+
+
+function clickaction(){
+    button.style.display = "none"
+
+
+    observeChanges()
+}
 
 // Div for data display
 const CHART = document.createElement("div");
@@ -56,16 +64,18 @@ function observeChanges() {
     const targetNode = document.querySelector("#game-log-text");
     console.log("targetNode type:" + typeof(targetNode))
     console.log(targetNode)
-    const observer = new MutationObserver(function (mutationsList, observer) {
-        for (let mutation of mutationsList) {
-            if (mutation.type === "childList") {
-                const content = targetNode.innerHTML;
-                refreshData();  
-                getUsername()
-                removeAds();
+    const observer = new MutationObserver(
+            function (mutationsList, observer) {
+                for (let mutation of mutationsList) {
+                    if (mutation.type === "childList") {
+                        const content = targetNode.innerHTML;
+                        refreshData();  
+                        getUsername()
+                        removeAds();
+                    }
+                }
             }
-        }
-    });
+    );
     const config = { attributes: true, childList: true, subtree: true };
     observer.observe(targetNode, config);
     observer_up = 1;
@@ -82,9 +92,10 @@ function buildChart() {
         // A div per user
         let user_data = data[user];
         let userdiv = document.createElement("div");
+        userdiv.style.marginTop = "10px"
         userdiv.innerText = user;
 
-        if (user == me){userdiv.style.color = 'blue';}else{userdiv.style.color = 'black';};
+        if (user == me){userdiv.style.color = 'blue'; return}else{userdiv.style.color = 'black';};
         
 
         for (i = 0; i < RESOURCES_LIST.length; i++) {
