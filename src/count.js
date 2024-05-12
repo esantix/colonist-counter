@@ -11,10 +11,13 @@
 const topBar = document.createElement("div");
 topBar.classList.add("top-bar");
 
+
+let observer_up = 0;
+
 // start button
 const button = document.createElement("button");
 button.textContent = "Resource counter";
-button.addEventListener("click", activate);
+button.onclick = observeChanges
 
 // Div for data display
 const CHART = document.createElement("div");
@@ -29,14 +32,8 @@ let RESOURCES_LIST = ["lumber", "brick", "grain", "wool", "ore", "card"]; //resc
 let me = ""; 
 let is_monopoly = false; // Aux variable for parsing monopoly log
 
-function activate() {
-    // Activate funtion. Needs to called after logs div has loaded
 
-    getUsername()
 
-    removeAds();
-    observeChanges();
-}
 
 function getUsername(){
     me = document.getElementById('header_profile_username').innerText;
@@ -53,17 +50,26 @@ function removeAds() {
 
 function observeChanges() {
     // Refresh data on changes on log element 
-    const targetNode = document.getElementById("game-log-text");
+    // const targetNode = document.getElementById("game-log-text");
+    if( observer_up == 0){
+    
+    const targetNode = document.querySelector("#game-log-text");
+    console.log("targetNode type:" + typeof(targetNode))
+    console.log(targetNode)
     const observer = new MutationObserver(function (mutationsList, observer) {
         for (let mutation of mutationsList) {
             if (mutation.type === "childList") {
                 const content = targetNode.innerHTML;
-                refreshData();
+                refreshData();  
+                getUsername()
+                removeAds();
             }
         }
     });
     const config = { attributes: true, childList: true, subtree: true };
     observer.observe(targetNode, config);
+    observer_up = 1;
+}       
 }
 
 function buildChart() {
@@ -146,25 +152,20 @@ function refreshData() {
             //
             if (operation == "+") {
                 data[user][resource] += 1;
-                console.log([user, "+1", resource]);
             } else if (operation == "-") {
                 data[user][resource] -= 1;
-                console.log([user, "-1", resource]);
             } else if (typeof operation == "number") {
                 let amount = operation; // for monopoly operation is the number
                 data[user][resource] += amount;
-                console.log([user, `+${amount}`, resource]);
 
                 for (let user2 in data) {
                     if (user2 != user) {
                         data[user2][resource] = 0;
-                        console.log([user2, "=0", resource]);
                     }
                 }
             }
         }
     }
-    console.log(data);
     buildChart();
 }
 
@@ -220,14 +221,18 @@ function parseMsg(htmlMsg) {
             } else if (activity == "gave bank") {
                 // bank trade
                 let op = "-";
+                
                 for (let i = 2; i < msgCtn.length; i++) {
-                    if (msgCtn[i].nodeType == 3) {
+                    
+                    if (msgCtn[i].textContent.trim() == "and took") {
                         op = "+";
                     } else {
                         let resource = msgCtn[i].alt;
                         actions.push([user, op, resource]);
+                       // console.log("BT",[user, op, resource])
                     }
                 }
+                console.log("")
             } else if (activity == "traded") {
                 // Player trade
                 let l = parseInt(msgCtn.length) - 1;
@@ -289,6 +294,9 @@ function parseMsg(htmlMsg) {
             }
         }
     } catch (e) { }
+
+
+
 
     return actions;
 }
