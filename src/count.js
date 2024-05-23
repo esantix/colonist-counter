@@ -22,27 +22,39 @@ let MY_USERNAME = "";
 let is_monopoly = false; // Aux variable for parsing monopoly log
 let is_active = false
 
-// -------------------------------------------------------------------------- //
-
-
-
 // --------------------  Build initial HTML containers  --------------------- //
 const topBar = document.createElement("div"); // Create top bar
 topBar.classList.add("top-bar");
 
-const button = document.createElement("div"); // Start button
-button.textContent = "Activate counter";
-button.addEventListener("click", activate);
-button.classList.add("main-button")
-button.classList.add("button_cta_sub")
-
 const user_info_wrapper = document.createElement("div"); // Div for data display
 user_info_wrapper.classList.add("user-div-wp")
 
-topBar.appendChild(button);
 topBar.appendChild(user_info_wrapper);
 document.body.insertBefore(topBar, document.body.firstChild);
 // -------------------------------------------------------------------------- //
+
+observeDOM();
+
+function observeDOM() {
+
+    const targetId = LOG_WRAPPER_ID; 
+
+    const observer = new MutationObserver((mutationsList) => {
+        for (let mutation of mutationsList) {
+            if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
+                for (let node of mutation.addedNodes) {
+                    if (node.nodeType === 1 && node.id === targetId) {
+                        activate();
+                        observer.disconnect(); 
+                        break;
+                    }
+                }
+            }
+        }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
+}
 
 function activate() {
     // Activate funtion. Needs to called after logs div has loaded
@@ -317,3 +329,5 @@ function parseMsg(htmlMsg) {
 
     return actions;
 }
+
+
