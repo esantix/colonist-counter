@@ -19,10 +19,11 @@ button.classList.add("main-button")
 button.classList.add("button_cta_sub")
 
 // Div for data display
-const CHART = document.createElement("div");
+const user_infor_wrapper = document.createElement("div");
+user_infor_wrapper.classList.add("user-div-wp")
 
 topBar.appendChild(button);
-topBar.appendChild(CHART);
+topBar.appendChild(user_infor_wrapper);
 document.body.insertBefore(topBar, document.body.firstChild);
 
 let user_color_map = {};
@@ -130,53 +131,62 @@ function buildChart() {
     // Build graphical display of resources
 
 
-    CHART.innerHTML = ""; // Needs to be cleared each time. Calculation is the sum of all logs
+    user_infor_wrapper.innerHTML = ""; // Needs to be cleared each time. Calculation is the sum of all logs
     Object.keys(data).forEach((user) => {
 
-        // A div per user
-        let user_data = data[user];
-        let userdiv = document.createElement("div");
-        userdiv.classList.add("user-div")
-        userdiv.innerText = user;
+        if(user != me){
+            // A div per user
+            let user_data = data[user];
+            let userdiv = document.createElement("div");
+            let user_hr = document.createElement("div");
+            userdiv.classList.add("user-div")
 
-        let user_color = user_color_map[user];
-       userdiv.style.color = user_color
-
-
-
-        for (i = 0; i < RESOURCES_LIST.length; i++) {
-
-            let resource_div = document.createElement("div");
-            resource_div.style.display = "flex";
-
-            let r_img = document.createElement("img");
-            r_img.setAttribute("height", "23");
-
-            let r_span = document.createElement("span");
-            let n = user_data[RESOURCES_LIST[i]];
-
-            // "card" resource is special since actual resource is not shown. 
-            // Whan cards are used the calculation can be wrong. but this gives sense of error margins
-            if (RESOURCES_LIST[i] == "card") {
-                r_img.setAttribute("src", `/dist/images/card_rescardback.svg`);
-                r_span.style.color = 'black';
-                r_span.innerText = `     ${(n < 0 ? "" : "+") + n}`;
-                (n < 0 ? "" : "+") + n // Show sign alwys
-            } else {
-                r_img.setAttribute("src", `/dist/images/card_${RESOURCES_LIST[i]}.svg`);
-                r_span.innerText = `    ${n}`;
-            }
+            user_hr.innerText = user;
+            user_hr.classList.add("user-div-hr")
+    
+            let user_color = user_color_map[user];
+            user_hr.style.color = user_color
             
-            // Only show existing
-            if (user_data[RESOURCES_LIST[i]] != 0) {
+            userdiv.appendChild(user_hr);
+            for (i = 0; i < RESOURCES_LIST.length; i++) {
+    
+                let resource_div = document.createElement("div");
+                resource_div.classList.add("resource-div")
+    
+                let r_img = document.createElement("img");
+                r_img.classList.add("r_div_img")
+    
+                let r_span = document.createElement("span");
+                r_span.classList.add("r_div_span")
+                let n = user_data[RESOURCES_LIST[i]];
+    
+                // "card" resource is special since actual resource is not shown. 
+                // Whan cards are used the calculation can be wrong. but this gives sense of error margins
+                if (RESOURCES_LIST[i] == "card") {
+                    r_img.setAttribute("src", `/dist/images/card_rescardback.svg`);
+                    r_span.style.color = 'black';
+                    r_span.innerText = `${(n < 0 ? "" : "+") + n}`;
+                    (n < 0 ? "" : "+") + n // Show sign alwys
+                } else {
+                    r_img.setAttribute("src", `/dist/images/card_${RESOURCES_LIST[i]}.svg`);
+                    r_span.innerText = `    ${n}`;
+                }
+                
                 resource_div.appendChild(r_img);
                 resource_div.appendChild(r_span);
                 userdiv.appendChild(resource_div);
+                // Only show existing
+                if (user_data[RESOURCES_LIST[i]] == 0) {
+                    r_span.innerText = ""
+                }
             }
+    
+            // Add updated chart
+            user_infor_wrapper.append(userdiv);
+
+
         }
 
-        // Add updated chart
-        CHART.append(userdiv);
     });
 }
 
