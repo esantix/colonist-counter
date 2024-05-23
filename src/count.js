@@ -12,10 +12,11 @@ const topBar = document.createElement("div");
 topBar.classList.add("top-bar");
 
 // start button
-const button = document.createElement("button");
-button.textContent = "Resource counter";
+const button = document.createElement("div");
+button.textContent = "Activate counter";
 button.addEventListener("click", activate);
 button.classList.add("main-button")
+button.classList.add("button_cta_sub")
 
 // Div for data display
 const CHART = document.createElement("div");
@@ -24,6 +25,7 @@ topBar.appendChild(button);
 topBar.appendChild(CHART);
 document.body.insertBefore(topBar, document.body.firstChild);
 
+let user_color_map = {};
 
 let data = {}; // User resources map
 let RESOURCES_LIST = ["lumber", "brick", "grain", "wool", "ore", "card"]; //rescardback
@@ -40,7 +42,7 @@ function activate() {
     removeAds();
     if(!is_active)
     {
-        observeChanges();}
+        startObserver();}
 }
 
 function getUsername(){
@@ -56,8 +58,7 @@ function removeAds() {
     document.getElementById("in_game_ab_bottom_small").style.display = "none";
 }
 
-function observeChanges() {
-    is_active = true
+function startObserver() {
     // Refresh data on changes on log element 
     const targetNode = document.getElementById("game-log-text");
     const observer = new MutationObserver(function (mutationsList, observer) {
@@ -70,65 +71,15 @@ function observeChanges() {
     });
     const config = { attributes: true, childList: true, subtree: true };
     observer.observe(targetNode, config);
+    is_active = true
     button.style.display = "none"
 }
 
-function buildChart() {
-    // Build graphical display of resources
-
-
-    CHART.innerHTML = ""; // Needs to be cleared each time. Calculation is the sum of all logs
-    Object.keys(data).forEach((user) => {
-
-        // A div per user
-        let user_data = data[user];
-        let userdiv = document.createElement("div");
-        userdiv.innerText = user;
-
-        if (user == me){userdiv.style.color = 'blue';}else{userdiv.style.color = 'black';};
-        
-
-        for (i = 0; i < RESOURCES_LIST.length; i++) {
-
-            let resource_div = document.createElement("div");
-            resource_div.style.display = "flex";
-
-            let r_img = document.createElement("img");
-            r_img.setAttribute("height", "23");
-
-            let r_span = document.createElement("span");
-            let n = user_data[RESOURCES_LIST[i]];
-
-            // "card" resource is special since actual resource is not shown. 
-            // Whan cards are used the calculation can be wrong. but this gives sense of error margins
-            if (RESOURCES_LIST[i] == "card") {
-                r_img.setAttribute("src", `/dist/images/card_rescardback.svg`);
-                r_span.style.color = 'black';
-                r_span.innerText = `     ${(n < 0 ? "" : "+") + n}`;
-                (n < 0 ? "" : "+") + n // Show sign alwys
-            } else {
-                r_img.setAttribute("src", `/dist/images/card_${RESOURCES_LIST[i]}.svg`);
-                r_span.innerText = `    ${n}`;
-                r_span.style.color = 'white';
-            }
-            
-            // Only show existing
-            if (user_data[RESOURCES_LIST[i]] != 0) {
-                resource_div.appendChild(r_img);
-                resource_div.appendChild(r_span);
-                userdiv.appendChild(resource_div);
-            }
-        }
-
-        // Add updated chart
-        CHART.append(userdiv);
-    });
-}
 
 function refreshData() {
     // Calculate all user data
 
-    data = {};
+    data = {}; // Reset all data
     let content = document.getElementById("game-log-text"); 
 
     for (let i = 0; i < content.childNodes.length; i++) {
@@ -175,6 +126,62 @@ function refreshData() {
     buildChart();
 }
 
+function buildChart() {
+    // Build graphical display of resources
+
+
+    CHART.innerHTML = ""; // Needs to be cleared each time. Calculation is the sum of all logs
+    Object.keys(data).forEach((user) => {
+
+        // A div per user
+        let user_data = data[user];
+        let userdiv = document.createElement("div");
+        userdiv.classList.add("user-div")
+        userdiv.innerText = user;
+
+        let user_color = user_color_map[user];
+       userdiv.style.color = user_color
+
+
+
+        for (i = 0; i < RESOURCES_LIST.length; i++) {
+
+            let resource_div = document.createElement("div");
+            resource_div.style.display = "flex";
+
+            let r_img = document.createElement("img");
+            r_img.setAttribute("height", "23");
+
+            let r_span = document.createElement("span");
+            let n = user_data[RESOURCES_LIST[i]];
+
+            // "card" resource is special since actual resource is not shown. 
+            // Whan cards are used the calculation can be wrong. but this gives sense of error margins
+            if (RESOURCES_LIST[i] == "card") {
+                r_img.setAttribute("src", `/dist/images/card_rescardback.svg`);
+                r_span.style.color = 'black';
+                r_span.innerText = `     ${(n < 0 ? "" : "+") + n}`;
+                (n < 0 ? "" : "+") + n // Show sign alwys
+            } else {
+                r_img.setAttribute("src", `/dist/images/card_${RESOURCES_LIST[i]}.svg`);
+                r_span.innerText = `    ${n}`;
+            }
+            
+            // Only show existing
+            if (user_data[RESOURCES_LIST[i]] != 0) {
+                resource_div.appendChild(r_img);
+                resource_div.appendChild(r_span);
+                userdiv.appendChild(resource_div);
+            }
+        }
+
+        // Add updated chart
+        CHART.append(userdiv);
+    });
+}
+
+
+
 function parseMsg(htmlMsg) {
     //
     // Return [(user, '+', resource), ...]
@@ -183,6 +190,7 @@ function parseMsg(htmlMsg) {
     try {
         let msgCtn = htmlMsg.childNodes[1].childNodes;
         var user = htmlMsg.children[1].children[0].innerText.trim(); // no funciona para You Stole
+        user_color_map[user] = htmlMsg.children[1].children[0].style.color
 
         if (is_monopoly) {
             is_monopoly = false;

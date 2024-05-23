@@ -1,0 +1,23 @@
+.user-div{
+ padding: 5px;
+    background-color: rgba(255, 255, 255, 0.863);
+    color: black;
+    min-width: fit-content;
+    margin-top: 10px;
+   
+   }
+
+.main-button{
+   margin: 10px;
+   background-color: #1fab1c;
+   border-radius: 8px;
+   padding: 10px;
+   color: white;
+   font-weight: 700;
+filter: drop-shadow(2px 4px 4px rgba(20,20,20,0.4));
+font-size: 1rem;
+cursor: pointer;
+height: 40px;
+max-width: fit-content !important;
+text-align: center;
+}
