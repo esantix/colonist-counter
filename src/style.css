@@ -1,23 +1,61 @@
-.user-div{
- padding: 5px;
-    background-color: rgba(255, 255, 255, 0.863);
-    color: black;
-    min-width: fit-content;
-    margin-top: 10px;
-   
-   }
+.user-div-wp{
+   padding-top: 10px;
+   margin-left: 10px;
+}
 
-.main-button{
+.user-div {
+   padding: 5px;
+   background-image: linear-gradient(to bottom,#fcfaf5,#e2d7c4);
+   color: black;
+   width: fit-content !important;
+   min-width: 125px;
+   margin-top: 10px;
+   display: flex;
+   flex-direction: column;
+   border-radius: 5px;
+   
+}
+
+.user-div-hr{
+   font-weight: 700;
+   margin-bottom: 3px;
+   text-align: center;
+
+}
+
+.top-bar{
+   height: 100%;
+   display: flex;
+   flex-direction: column;
+}
+
+.resource-div{
+   display: flex;
+   color: black;
+   margin-left: 5px;
+   margin-bottom: 2px;
+}
+
+.r_div_span{
+   margin-left: 3px;
+}
+
+.r_div_img{
+   height: 23px;
+}
+
+.main-button {
+   z-index: 999;
    margin: 10px;
    background-color: #1fab1c;
    border-radius: 8px;
    padding: 10px;
    color: white;
    font-weight: 700;
-filter: drop-shadow(2px 4px 4px rgba(20,20,20,0.4));
-font-size: 1rem;
-cursor: pointer;
-height: 40px;
-max-width: fit-content !important;
-text-align: center;
+   filter: drop-shadow(2px 4px 4px rgba(20, 20, 20, 0.4));
+   font-size: 1rem;
+   cursor: pointer;
+   height: 40px;
+   max-width: fit-content !important;
+   text-align: center;
 }
