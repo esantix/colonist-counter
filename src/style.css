@@ -53,7 +53,7 @@
    color: white;
    font-weight: 700;
    filter: drop-shadow(2px 4px 4px rgba(20, 20, 20, 0.4));
-   font-size: 1rem;
+   //font-size: 1rem;
    cursor: pointer;
    height: 40px;
    max-width: fit-content !important;

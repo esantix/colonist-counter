@@ -2,53 +2,60 @@
 // 
 // Chrome Extension to help keep track of Colonist resource exchanges
 //
-//
-// Works as of 1st March 2024
-//
-//
 
-// Create top bar
-const topBar = document.createElement("div");
+// ----------------------------  GLOBALS ------------------------------------ //
+
+let USER_COLORMAP = {};
+let RESOURCES_DATA = {}; // User resources map
+
+let LUMBR = "lumber"
+let BRICK = "brick"
+let GRAIN = "grain"
+let WOOL = "wool"
+let ORE = "ore"
+let UNKWN_CARD = "card"
+let LOG_WRAPPER_ID = "game-log-text"
+
+let RESOURCES_LIST = [LUMBR, BRICK, GRAIN, WOOL, ORE, UNKWN_CARD]; //rescardback
+let MY_USERNAME = "";
+
+let is_monopoly = false; // Aux variable for parsing monopoly log
+let is_active = false
+
+// -------------------------------------------------------------------------- //
+
+
+
+// --------------------  Build initial HTML containers  --------------------- //
+const topBar = document.createElement("div"); // Create top bar
 topBar.classList.add("top-bar");
 
-// start button
-const button = document.createElement("div");
+const button = document.createElement("div"); // Start button
 button.textContent = "Activate counter";
 button.addEventListener("click", activate);
 button.classList.add("main-button")
 button.classList.add("button_cta_sub")
 
-// Div for data display
-const user_infor_wrapper = document.createElement("div");
-user_infor_wrapper.classList.add("user-div-wp")
+const user_info_wrapper = document.createElement("div"); // Div for data display
+user_info_wrapper.classList.add("user-div-wp")
 
 topBar.appendChild(button);
-topBar.appendChild(user_infor_wrapper);
+topBar.appendChild(user_info_wrapper);
 document.body.insertBefore(topBar, document.body.firstChild);
-
-let user_color_map = {};
-
-let data = {}; // User resources map
-let RESOURCES_LIST = ["lumber", "brick", "grain", "wool", "ore", "card"]; //rescardback
-let me = ""; 
-let is_monopoly = false; // Aux variable for parsing monopoly log
-
-let is_active = false
+// -------------------------------------------------------------------------- //
 
 function activate() {
     // Activate funtion. Needs to called after logs div has loaded
-
-    getUsername()
-
+    setUsername()
     removeAds();
-    if(!is_active)
-    {
-        startObserver();}
+    if (!is_active) {
+        startLogObserver();
+    }
 }
 
-function getUsername(){
-    me = document.getElementById('header_profile_username').innerText;
-    console.log(`username = ${me}`);
+function setUsername() {
+    MY_USERNAME = document.getElementById('header_profile_username').innerText;
+    console.log(`username = ${MY_USERNAME}`);
 }
 
 function removeAds() {
@@ -59,9 +66,9 @@ function removeAds() {
     document.getElementById("in_game_ab_bottom_small").style.display = "none";
 }
 
-function startObserver() {
+function startLogObserver() {
     // Refresh data on changes on log element 
-    const targetNode = document.getElementById("game-log-text");
+    const targetNode = document.getElementById(LOG_WRAPPER_ID);
     const observer = new MutationObserver(function (mutationsList, observer) {
         for (let mutation of mutationsList) {
             if (mutation.type === "childList") {
@@ -76,12 +83,11 @@ function startObserver() {
     button.style.display = "none"
 }
 
-
 function refreshData() {
     // Calculate all user data
 
-    data = {}; // Reset all data
-    let content = document.getElementById("game-log-text"); 
+    RESOURCES_DATA = {}; // Reset all data
+    let content = document.getElementById(LOG_WRAPPER_ID);
 
     for (let i = 0; i < content.childNodes.length; i++) {
         const child = content.children[i];
@@ -96,34 +102,34 @@ function refreshData() {
             let resource = actions[j][2]; //
 
             if (user) {
-                if (!(user in data)) {
-                    data[user] = { ore: 0,wool: 0,brick: 0,grain: 0,lumber: 0, card: 0,
+                if (!(user in RESOURCES_DATA)) {
+                    RESOURCES_DATA[user] = {
+                        ore: 0, wool: 0, brick: 0, grain: 0, lumber: 0, card: 0,
                     };
                 }
             }
-
             //
             if (operation == "+") {
-                data[user][resource] += 1;
-               // console.log([user, "+1", resource]);
+                RESOURCES_DATA[user][resource] += 1;
+                // console.log([user, "+1", resource]);
             } else if (operation == "-") {
-                data[user][resource] -= 1;
+                RESOURCES_DATA[user][resource] -= 1;
                 //console.log([user, "-1", resource]);
             } else if (typeof operation == "number") {
                 let amount = operation; // for monopoly operation is the number
-                data[user][resource] += amount;
+                RESOURCES_DATA[user][resource] += amount;
                 //console.log([user, `+${amount}`, resource]);
 
-                for (let user2 in data) {
+                for (let user2 in RESOURCES_DATA) {
                     if (user2 != user) {
-                        data[user2][resource] = 0;
-                  //      console.log([user2, "=0", resource]);
+                        RESOURCES_DATA[user2][resource] = 0;
+                        //      console.log([user2, "=0", resource]);
                     }
                 }
             }
         }
     }
-//    console.log(data);
+    //    console.log(data);
     buildChart();
 }
 
@@ -131,38 +137,38 @@ function buildChart() {
     // Build graphical display of resources
 
 
-    user_infor_wrapper.innerHTML = ""; // Needs to be cleared each time. Calculation is the sum of all logs
-    Object.keys(data).forEach((user) => {
+    user_info_wrapper.innerHTML = ""; // Needs to be cleared each time. Calculation is the sum of all logs
+    Object.keys(RESOURCES_DATA).forEach((user) => {
 
-        if(user != me){
+        if (user != MY_USERNAME) {
             // A div per user
-            let user_data = data[user];
+            let user_data = RESOURCES_DATA[user];
             let userdiv = document.createElement("div");
             let user_hr = document.createElement("div");
             userdiv.classList.add("user-div")
 
             user_hr.innerText = user;
             user_hr.classList.add("user-div-hr")
-    
-            let user_color = user_color_map[user];
+
+            let user_color = USER_COLORMAP[user];
             user_hr.style.color = user_color
-            
+
             userdiv.appendChild(user_hr);
             for (i = 0; i < RESOURCES_LIST.length; i++) {
-    
+
                 let resource_div = document.createElement("div");
                 resource_div.classList.add("resource-div")
-    
+
                 let r_img = document.createElement("img");
                 r_img.classList.add("r_div_img")
-    
+
                 let r_span = document.createElement("span");
                 r_span.classList.add("r_div_span")
                 let n = user_data[RESOURCES_LIST[i]];
-    
-                // "card" resource is special since actual resource is not shown. 
+
+                // UNKWN_CARD resource is special since actual resource is not shown. 
                 // Whan cards are used the calculation can be wrong. but this gives sense of error margins
-                if (RESOURCES_LIST[i] == "card") {
+                if (RESOURCES_LIST[i] == UNKWN_CARD) {
                     r_img.setAttribute("src", `/dist/images/card_rescardback.svg`);
                     r_span.style.color = 'black';
                     r_span.innerText = `${(n < 0 ? "" : "+") + n}`;
@@ -171,7 +177,7 @@ function buildChart() {
                     r_img.setAttribute("src", `/dist/images/card_${RESOURCES_LIST[i]}.svg`);
                     r_span.innerText = `    ${n}`;
                 }
-                
+
                 resource_div.appendChild(r_img);
                 resource_div.appendChild(r_span);
                 userdiv.appendChild(resource_div);
@@ -180,27 +186,20 @@ function buildChart() {
                     r_span.innerText = ""
                 }
             }
-    
             // Add updated chart
-            user_infor_wrapper.append(userdiv);
-
-
+            user_info_wrapper.append(userdiv);
         }
-
     });
 }
-
-
 
 function parseMsg(htmlMsg) {
     //
     // Return [(user, '+', resource), ...]
     var actions = [];
-
     try {
         let msgCtn = htmlMsg.childNodes[1].childNodes;
         var user = htmlMsg.children[1].children[0].innerText.trim(); // no funciona para You Stole
-        user_color_map[user] = htmlMsg.children[1].children[0].style.color
+        USER_COLORMAP[user] = htmlMsg.children[1].children[0].style.color
 
         if (is_monopoly) {
             is_monopoly = false;
@@ -214,7 +213,7 @@ function parseMsg(htmlMsg) {
             let stoled = msgCtn[3].innerText;
             let resource = msgCtn[1].alt;
 
-            actions.push([me, "+", resource]);
+            actions.push([MY_USERNAME, "+", resource]);
             actions.push([stoled, "-", resource]);
         } else {
             let activity = msgCtn[1].textContent.trim();
@@ -246,8 +245,8 @@ function parseMsg(htmlMsg) {
                 // bank trade
                 let op = "-";
                 for (let i = 2; i < msgCtn.length; i++) {
-               
-                    if (msgCtn[i].textContent.trim() == "and took") { 
+
+                    if (msgCtn[i].textContent.trim() == "and took") {
                         op = "+";
                     } else {
                         let resource = msgCtn[i].alt;
@@ -277,27 +276,27 @@ function parseMsg(htmlMsg) {
                 // buy dev card
                 let b_item = msgCtn[2].alt;
                 if (b_item == "development card") {
-                    actions.push([user, "-", "wool"]);
-                    actions.push([user, "-", "grain"]);
-                    actions.push([user, "-", "ore"]);
+                    actions.push([user, "-", WOOL]);
+                    actions.push([user, "-", GRAIN]);
+                    actions.push([user, "-", ORE]);
                 }
             } else if (activity == "built a") {
                 // Build infra
                 let b_item = msgCtn[2].alt;
                 if (b_item == "road") {
-                    actions.push([user, "-", "lumber"]);
-                    actions.push([user, "-", "brick"]);
+                    actions.push([user, "-", LUMBR]);
+                    actions.push([user, "-", BRICK]);
                 } else if (b_item == "city") {
-                    actions.push([user, "-", "grain"]);
-                    actions.push([user, "-", "grain"]);
-                    actions.push([user, "-", "ore"]);
-                    actions.push([user, "-", "ore"]);
-                    actions.push([user, "-", "ore"]);
+                    actions.push([user, "-", GRAIN]);
+                    actions.push([user, "-", GRAIN]);
+                    actions.push([user, "-", ORE]);
+                    actions.push([user, "-", ORE]);
+                    actions.push([user, "-", ORE]);
                 } else if (b_item == "settlement") {
-                    actions.push([user, "-", "lumber"]);
-                    actions.push([user, "-", "brick"]);
-                    actions.push([user, "-", "wool"]);
-                    actions.push([user, "-", "grain"]);
+                    actions.push([user, "-", LUMBR]);
+                    actions.push([user, "-", BRICK]);
+                    actions.push([user, "-", WOOL]);
+                    actions.push([user, "-", GRAIN]);
                 }
             } else if (activity == "stole") {
                 let resource = msgCtn[2].alt;
@@ -305,7 +304,7 @@ function parseMsg(htmlMsg) {
                 if (msgCtn.length == 4) {
                     // stole you o You stol
                     actions.push([user, "+", resource]);
-                    actions.push([me, "-", resource]);
+                    actions.push([MY_USERNAME, "-", resource]);
                 } else {
                     let stoled = msgCtn[4].innerText;
 
