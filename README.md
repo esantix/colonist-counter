@@ -4,7 +4,8 @@ Chrome extention for colonist.io
 Keeps count of user resources by log inspection
 
 
-![alt text](./image.jpeg)
+![Screenshot from 2024-05-23 13-36-43](https://github.com/esantix/colonist-ext/assets/44036401/d82a028e-84d0-46e7-b286-30e7ef7044ae)
+
 
 
 ## Usage
