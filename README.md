@@ -13,7 +13,9 @@ Keeps count of oponents resources by parsing the logs. It only uses public infor
 
 ## Installation
 
+- Download latest release asset https://github.com/esantix/colonist-ext/releases/latest
+- Unzip file 
 - Open chrome://extensions/
 - Enable developer mode
 - Load unpacked
-- Select **src/** folder
+- Select **src/** folder from unzipped path
