@@ -5,35 +5,56 @@
 
 // ----------------------------  GLOBALS ------------------------------------ //
 
+// Game keywords
+let ROAD = "road";
+let SETTLEMENT = "settlement";
+let CITY = "city";
+let DEV_CARD = "development card";
+let LUMBER = "lumber";
+let BRICK = "brick";
+let GRAIN = "grain";
+let WOOL = "wool";
+let ORE = "ore";
+let UNKNOWN_CARD = "card";
+
+// Game configuration variables
+let START_RESOURCES = {ORE: 0, WHOOL: 0, BRICK: 0, GRAIN: 0, LUMBER: 0, CARD: 0};
+let RESOURCES_LIST = [LUMBER, BRICK, GRAIN, WOOL, ORE, UNKNOWN_CARD]; //rescardback
+
+// Scrapping variables
+let LOG_WRAPPER_ID = "game-log-text" // Class Id of log wrapper
+let CARD_ICON = {
+    LUMBER: "/dist/images/card_lumber.svg",
+    BRICK: "/dist/images/card_brick.svg",
+    GRAIN: "/dist/images/card_grain.svg",
+    WOOL: "/dist/images/card_wool.svg",
+    ORE: "/dist/images/card_ore.svg",
+    UNKNOWN_CARD: "/dist/images/card_rescardback.svg"
+};
+
+// Aux global variables
 let USER_COLORMAP = {};
 let RESOURCES_DATA = {}; // User resources map
-
-let LUMBR = "lumber"
-let BRICK = "brick"
-let GRAIN = "grain"
-let WOOL = "wool"
-let ORE = "ore"
-let UNKWN_CARD = "card"
-let LOG_WRAPPER_ID = "game-log-text"
-
-let RESOURCES_LIST = [LUMBR, BRICK, GRAIN, WOOL, ORE, UNKWN_CARD]; //rescardback
 let MY_USERNAME = "";
-
-let is_monopoly = false; // Aux variable for parsing monopoly log
-let is_active = false
+let PREVIOUS_IS_MONOPOLY = false; // Aux variable for parsing monopoly log
+let IS_OBSERVER_ACTIVE = false
 
 // --------------------  Build initial HTML containers  --------------------- //
-const topBar = document.createElement("div"); // Create top bar
-topBar.classList.add("top-bar");
+
+const TOPBAR = document.createElement("div"); // Create top bar
+TOPBAR.classList.add("top-bar");
 
 const user_info_wrapper = document.createElement("div"); // Div for data display
 user_info_wrapper.classList.add("user-div-wp")
 
-topBar.appendChild(user_info_wrapper);
-document.body.insertBefore(topBar, document.body.firstChild);
-// -------------------------------------------------------------------------- //
+TOPBAR.appendChild(user_info_wrapper);
+document.body.insertBefore(TOPBAR, document.body.firstChild);
+
+// ------------------------   Inicializar  ---------------------------------- //
 
 observeDOM();
+
+// --------------------------   Funciones  ---------------------------------- //
 
 function observeDOM() {
 
@@ -60,7 +81,7 @@ function activate() {
     // Activate funtion. Needs to called after logs div has loaded
     setUsername()
     removeAds();
-    if (!is_active) {
+    if (!IS_OBSERVER_ACTIVE) {
         startLogObserver();
     }
 }
@@ -84,64 +105,51 @@ function startLogObserver() {
     const observer = new MutationObserver(function (mutationsList, observer) {
         for (let mutation of mutationsList) {
             if (mutation.type === "childList") {
-                const content = targetNode.innerHTML;
                 refreshData();
             }
         }
     });
     const config = { attributes: true, childList: true, subtree: true };
     observer.observe(targetNode, config);
-    is_active = true
-    button.style.display = "none"
+    IS_OBSERVER_ACTIVE = true
 }
 
 function refreshData() {
-    // Calculate all user data
+    // Calculate all user data.
 
     RESOURCES_DATA = {}; // Reset all data
     let content = document.getElementById(LOG_WRAPPER_ID);
 
     for (let i = 0; i < content.childNodes.length; i++) {
-        const child = content.children[i];
+        const log_item = content.children[i];
 
-        let actions = parseMsg(child); // A message (log item) is a collection of actions to take
-
-        // action interpretation
+        let actions = parseMsg(log_item); // A message (log item) is a collection of actions to take
+        
+        // Apply action
         for (let j = 0; j < actions.length; j++) {
-
+            
             let user = actions[j][0]; // Who to modify resources to
-            let operation = actions[j][1]; // "+" adds 1; "-1" deducts 1; <number> adds that value (only for monopoly)
+            let amount = actions[j][1]; // number of resource to add 
             let resource = actions[j][2]; //
 
-            if (user) {
-                if (!(user in RESOURCES_DATA)) {
-                    RESOURCES_DATA[user] = {
-                        ore: 0, wool: 0, brick: 0, grain: 0, lumber: 0, card: 0,
-                    };
-                }
-            }
-            //
-            if (operation == "+") {
-                RESOURCES_DATA[user][resource] += 1;
-                // console.log([user, "+1", resource]);
-            } else if (operation == "-") {
-                RESOURCES_DATA[user][resource] -= 1;
-                //console.log([user, "-1", resource]);
-            } else if (typeof operation == "number") {
-                let amount = operation; // for monopoly operation is the number
-                RESOURCES_DATA[user][resource] += amount;
-                //console.log([user, `+${amount}`, resource]);
+            let flag = null;
+            if (actions[j].length == 4){
+                flag = actions[j][3]
+            };
 
-                for (let user2 in RESOURCES_DATA) {
-                    if (user2 != user) {
-                        RESOURCES_DATA[user2][resource] = 0;
-                        //      console.log([user2, "=0", resource]);
-                    }
+            if (user) {
+                if (!(user in RESOURCES_DATA)) { RESOURCES_DATA[user] = START_RESOURCES;}
+            }
+
+            RESOURCES_DATA[user][resource] += amount;
+            if (flag == "MONOPOLY"){
+                for (let player in RESOURCES_DATA) {
+                    if (player != user) { RESOURCES_DATA[player][resource] = 0;}
                 }
             }
         }
     }
-    //    console.log(data);
+
     buildChart();
 }
 
@@ -170,33 +178,20 @@ function buildChart() {
 
                 let resource_div = document.createElement("div");
                 resource_div.classList.add("resource-div")
-
                 let r_img = document.createElement("img");
                 r_img.classList.add("r_div_img")
-
                 let r_span = document.createElement("span");
                 r_span.classList.add("r_div_span")
+                
+                r_img.setAttribute("src", CARD_ICON[RESOURCES_LIST[i]]);
                 let n = user_data[RESOURCES_LIST[i]];
-
-                // UNKWN_CARD resource is special since actual resource is not shown. 
-                // Whan cards are used the calculation can be wrong. but this gives sense of error margins
-                if (RESOURCES_LIST[i] == UNKWN_CARD) {
-                    r_img.setAttribute("src", `/dist/images/card_rescardback.svg`);
-                    r_span.style.color = 'black';
-                    r_span.innerText = `${(n < 0 ? "" : "+") + n}`;
-                    (n < 0 ? "" : "+") + n // Show sign alwys
-                } else {
-                    r_img.setAttribute("src", `/dist/images/card_${RESOURCES_LIST[i]}.svg`);
-                    r_span.innerText = `    ${n}`;
-                }
-
+                r_span.innerText = (n == 0) ? "" : `    ${n}`  // Only show existing
+      
+            
                 resource_div.appendChild(r_img);
                 resource_div.appendChild(r_span);
                 userdiv.appendChild(resource_div);
-                // Only show existing
-                if (user_data[RESOURCES_LIST[i]] == 0) {
-                    r_span.innerText = ""
-                }
+          
             }
             // Add updated chart
             user_info_wrapper.append(userdiv);
@@ -205,129 +200,135 @@ function buildChart() {
 }
 
 function parseMsg(htmlMsg) {
-    //
-    // Return [(user, '+', resource), ...]
-    var actions = [];
+    // Parses html message into a list of operations
+    // Return [(user, amount_to_add, resource, <FLAG>), ...]
+
+    var operations = [];
     try {
+
         let msgCtn = htmlMsg.childNodes[1].childNodes;
         var user = htmlMsg.children[1].children[0].innerText.trim(); // no funciona para You Stole
-        USER_COLORMAP[user] = htmlMsg.children[1].children[0].style.color
 
-        if (is_monopoly) {
-            is_monopoly = false;
+        USER_COLORMAP[user] = htmlMsg.children[1].children[0].style.color // Solo al existir log puedo scrappear color de usuario
+
+
+        // Si el mensaje anterior es que suó monopoly
+        if (PREVIOUS_IS_MONOPOLY) {
             let resource = msgCtn[2].alt;
             let amount = parseInt(msgCtn[1].textContent.replace("stole", "").trim());
+            operations.push([user, amount, resource, "MONOPOLY"]);
+            PREVIOUS_IS_MONOPOLY = false;
 
-            actions.push([user, amount, resource]);
+        // Si el mensaje es You stole es una excepcion. (You se tiene que mapear a MY_USERNAME)
         } else if (htmlMsg.innerText.trim().startsWith("You stole")) {
-            // You steal TODO: identify user mapping
-
-            let stoled = msgCtn[3].innerText;
+            let stolen = msgCtn[3].innerText;
             let resource = msgCtn[1].alt;
+            operations.push([MY_USERNAME, +1, resource]);
+            operations.push([stolen, -1, resource]);
 
-            actions.push([MY_USERNAME, "+", resource]);
-            actions.push([stoled, "-", resource]);
         } else {
-            let activity = msgCtn[1].textContent.trim();
+            let action = msgCtn[1].textContent.trim(); // Accion
 
-            if (activity == "received starting resources") {
-                // beginning
-                for (let i = 2; i < msgCtn.length; i++) {
+            switch(action){
+                case "received starting resources":
+                    for (let i = 2; i < msgCtn.length; i++) {
                     let resource = msgCtn[i].alt;
-                    actions.push([user, "+", resource]);
-                }
-            } else if (activity == "used") {
-                let used_card = msgCtn[2].innerText.trim();
-                if (used_card == "Monopoly") {
-                    is_monopoly = true;
-                }
-            } else if (activity == "got" || activity == "took from bank") {
-                // by dice or Year of plenty
-                for (let i = 2; i < msgCtn.length; i++) {
-                    let resource = msgCtn[i].alt;
-                    actions.push([user, "+", resource]);
-                }
-            } else if (activity == "discarded") {
-                // discard by 7
-                for (let i = 2; i < msgCtn.length; i++) {
-                    let resource = msgCtn[i].alt;
-                    actions.push([user, "-", resource]);
-                }
-            } else if (activity == "gave bank") {
-                // bank trade
-                let op = "-";
-                for (let i = 2; i < msgCtn.length; i++) {
+                        operations.push([user, +1, resource]);
+                        };
+                    break;
+                
+                case "used": // Uso de carta Monopoly. El siguiente mensaje muestra que se robó
+                    let used_card = msgCtn[2].innerText.trim();
+                    if (used_card == "Monopoly") {
+                        PREVIOUS_IS_MONOPOLY = true;
+                        }
+                    break;
 
-                    if (msgCtn[i].textContent.trim() == "and took") {
-                        op = "+";
-                    } else {
+                case "got": // Entrega por dado o Year of Plenty (+2)
+                case "took from bank": 
+                    for (let i = 2; i < msgCtn.length; i++) {
                         let resource = msgCtn[i].alt;
-                        actions.push([user, op, resource]);
-                    }
-                }
-            } else if (activity == "traded") {
-                // Player trade
-                let l = parseInt(msgCtn.length) - 1;
-                let user2 = msgCtn[l].innerText;
-
-                let taker = user;
-                let giver = user2;
-
-                for (let i = 2; i < msgCtn.length - 1; i++) {
-                    if (msgCtn[i].nodeType == 3) {
-                        taker = user2;
-                        giver = user;
-                    } else {
+                        operations.push([user, +1, resource]);
+                        }  
+                
+                case "discarded": // Descarte por tener mas del limite en dado 7
+                    for (let i = 2; i < msgCtn.length; i++) {
                         let resource = msgCtn[i].alt;
-
-                        actions.push([taker, "-", resource]);
-                        actions.push([giver, "+", resource]);
+                        operations.push([user, -1, resource]);
                     }
-                }
-            } else if (activity == "bought") {
-                // buy dev card
-                let b_item = msgCtn[2].alt;
-                if (b_item == "development card") {
-                    actions.push([user, "-", WOOL]);
-                    actions.push([user, "-", GRAIN]);
-                    actions.push([user, "-", ORE]);
-                }
-            } else if (activity == "built a") {
-                // Build infra
-                let b_item = msgCtn[2].alt;
-                if (b_item == "road") {
-                    actions.push([user, "-", LUMBR]);
-                    actions.push([user, "-", BRICK]);
-                } else if (b_item == "city") {
-                    actions.push([user, "-", GRAIN]);
-                    actions.push([user, "-", GRAIN]);
-                    actions.push([user, "-", ORE]);
-                    actions.push([user, "-", ORE]);
-                    actions.push([user, "-", ORE]);
-                } else if (b_item == "settlement") {
-                    actions.push([user, "-", LUMBR]);
-                    actions.push([user, "-", BRICK]);
-                    actions.push([user, "-", WOOL]);
-                    actions.push([user, "-", GRAIN]);
-                }
-            } else if (activity == "stole") {
-                let resource = msgCtn[2].alt;
 
-                if (msgCtn.length == 4) {
-                    // stole you o You stol
-                    actions.push([user, "+", resource]);
-                    actions.push([MY_USERNAME, "-", resource]);
-                } else {
-                    let stoled = msgCtn[4].innerText;
+                case "gave bank": // Descarte por sacar 7
+                    let op = -1;
+                    for (let i = 2; i < msgCtn.length; i++) {
+                        if (msgCtn[i].textContent.trim() == "and took") {
+                            op = +1;
+                            }
+                        else {
+                            let resource = msgCtn[i].alt;
+                            operations.push([user, op, resource]);
+                            }
+                        }
 
-                    actions.push([user, "+", resource]);
-                    actions.push([stoled, "-", resource]);
-                }
+                case "traded": // Player trade
+                    let l = parseInt(msgCtn.length) - 1;
+                    let user2 = msgCtn[l].innerText;
+
+                    let taker = user;
+                    let giver = user2;
+
+                    for (let i = 2; i < msgCtn.length - 1; i++) {
+                        if (msgCtn[i].nodeType == 3) {
+                            taker = user2;
+                            giver = user;
+                        } else {
+                            let resource = msgCtn[i].alt;
+
+                            operations.push([taker, -1, resource]);
+                            operations.push([giver, +1, resource]);
+                        }
+                    }
+
+                case "bought": // buy dev card
+                    let item = msgCtn[2].alt;
+                    if (item == "development card") {
+                        operations.push([user, -1, WOOL]);
+                        operations.push([user, -1, GRAIN]);
+                        operations.push([user, -1, ORE]);
+                    }
+
+                case "built a":// Build infra
+                    let b_item = msgCtn[2].alt;
+                    if (b_item == "road") {
+                        operations.push([user, -1, LUMBER]);
+                        operations.push([user, -1, BRICK]);
+                        } 
+                    else if (b_item == "city") {
+                        operations.push([user, -2, GRAIN]);
+                        operations.push([user, -3, ORE]);
+                        } 
+                    else if (b_item == "settlement") {
+                        operations.push([user, -1, LUMBER]);
+                        operations.push([user, -1, BRICK]);
+                        operations.push([user, -1, WOOL]);
+                        operations.push([user, -1, GRAIN]);
+                        }
+
+                case "stole":
+                    let resource = msgCtn[2].alt;
+                    if (msgCtn.length == 4) { // stole you o You stol
+                        operations.push([user, +1, resource]);
+                        operations.push([MY_USERNAME, -1, resource]);
+                        }    
+                    else {
+                        let stoled = msgCtn[4].innerText;
+                        operations.push([user, +1, resource]);
+                        operations.push([stoled, -1, resource]);
+                        }
             }
         }
     } catch (e) { }
 
-    return actions;
+    return operations;
 }
 
 
