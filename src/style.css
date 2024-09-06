@@ -30,6 +30,10 @@
    position:absolute
 }
 
+.bar{
+   background-color: rgb(30, 82, 151);
+}
+
 .resource-div{
    display: flex;
    color: black;
@@ -39,6 +43,11 @@
 
 .r_div_span{
    margin-left: 3px;
+}
+
+.d_div_span{
+   margin-left: 3px;
+   font-size: 11px;
 }
 
 .r_div_img{
