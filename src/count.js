@@ -59,10 +59,10 @@ let DICE_STATS = {
 const TOPBAR = document.createElement("div"); // Create top bar
 TOPBAR.classList.add("top-bar");
 
-const user_info_wrapper = document.createElement("div"); // Div for data display
-user_info_wrapper.classList.add("user-div-wp")
+const USER_DATA_WRAPPER = document.createElement("div"); // Div for data display
+USER_DATA_WRAPPER.classList.add("user-div-wp")
 
-TOPBAR.appendChild(user_info_wrapper);
+TOPBAR.appendChild(USER_DATA_WRAPPER);
 document.body.insertBefore(TOPBAR, document.body.firstChild);
 
 // ------------------------   Inicializar  ---------------------------------- //
@@ -126,15 +126,12 @@ function startLogObserver() {
         for (let mutation of mutationsList) {
             if (mutation.type === "childList") {
                 mutation.addedNodes.forEach(node => {
-
                     if (!IS_DATA_ACTIVE) {
                         buildChart()
                         IS_DATA_ACTIVE = true;
                     }
-
                     let operations = msg2operations(node)
                     if (operations.length > 0) {
-                        console.log(operations)
                         execute_ops(operations)
                     }
 
@@ -155,11 +152,13 @@ function execute_ops(operations) {
 
         let flag = operations[j][3]
         if (flag == "DICE_DATA") {
+            console.log("ROLLED "+operations[j][2])
             DICE_STATS[operations[j][2]] += 1;
             DICE_STATS["max"] = Math.max(...Object.values(DICE_STATS))
         }
         else {
             //console.log(actions[j])
+            console.log(operations[j])
             let user = operations[j][0]; // Who to modify resources to
             let amount = operations[j][1]; // number of resource to add 
             let resource = operations[j][2]; //
@@ -180,52 +179,54 @@ function execute_ops(operations) {
     buildChart();
 }
 
+function addUserChart(user){
+  // A div per user
+    let user_data = RESOURCES_DATA[user];
+    let userdiv = document.createElement("div");
+    let user_hr = document.createElement("div");
+    userdiv.classList.add("user-div")
+    userdiv.id = "userdiv_"+user
+
+    user_hr.innerText = user;
+    user_hr.classList.add("user-div-hr")
+
+    let user_color = USER_COLORMAP[user];
+    user_hr.style.color = user_color
+
+    userdiv.appendChild(user_hr);
+    for (i = 0; i < RESOURCES_LIST.length; i++) {
+
+        let resource_div = document.createElement("div");
+        resource_div.classList.add("resource-div")
+        let r_img = document.createElement("img");
+        r_img.classList.add("r_div_img")
+        let r_span = document.createElement("span");
+        r_span.classList.add("r_div_span")
+        r_span.id = user+"_"+RESOURCES_LIST[i]
+
+        r_img.setAttribute("src", CARD_ICON[RESOURCES_LIST[i]]);
+        let n = user_data[RESOURCES_LIST[i]];
+        r_span.innerText = (n == 0) ? "" : `    ${n}`  // Only show existing
+
+
+        resource_div.appendChild(r_img);
+        resource_div.appendChild(r_span);
+        userdiv.appendChild(resource_div);
+
+    }
+    // Add updated chart
+    USER_DATA_WRAPPER.append(userdiv);
+}
 
 
 function buildChart() {
     // Build graphical display of resources
-    console.log("Building chart")
 
-    user_info_wrapper.innerHTML = ""; // Needs to be cleared each time. Calculation is the sum of all logs
+    USER_DATA_WRAPPER.innerHTML = ""; // Needs to be cleared each time. Calculation is the sum of all logs
     Object.keys(RESOURCES_DATA).forEach((user) => {
 
-        if ("user" != MY_USERNAME) {
-            // A div per user
-            let user_data = RESOURCES_DATA[user];
-            let userdiv = document.createElement("div");
-            let user_hr = document.createElement("div");
-            userdiv.classList.add("user-div")
-            userdiv.classList.add(user)
-
-            user_hr.innerText = user;
-            user_hr.classList.add("user-div-hr")
-
-            let user_color = USER_COLORMAP[user];
-            user_hr.style.color = user_color
-
-            userdiv.appendChild(user_hr);
-            for (i = 0; i < RESOURCES_LIST.length; i++) {
-
-                let resource_div = document.createElement("div");
-                resource_div.classList.add("resource-div")
-                let r_img = document.createElement("img");
-                r_img.classList.add("r_div_img")
-                let r_span = document.createElement("span");
-                r_span.classList.add("r_div_span")
-                r_span.classList.add(user+"_"+RESOURCES_LIST[i])
-        
-                r_img.setAttribute("src", CARD_ICON[RESOURCES_LIST[i]]);
-                let n = user_data[RESOURCES_LIST[i]];
-                r_span.innerText = (n == 0) ? "" : `    ${n}`  // Only show existing
-
-
-                resource_div.appendChild(r_img);
-                resource_div.appendChild(r_span);
-                userdiv.appendChild(resource_div);
-
-            }
-            // Add updated chart
-            user_info_wrapper.append(userdiv);
+        if (user != MY_USERNAME) {
+          addUserChart(user)
         }
 
 
@@ -260,7 +261,7 @@ function buildChart() {
 
         }
         // Add updated chart
-        user_info_wrapper.append(dice_div);
+        USER_DATA_WRAPPER.append(dice_div);
 
 
 
@@ -358,7 +359,9 @@ function msg2operations(htmlMsg) {
                         }
                         else {
                             let resource = msgCtn[i].alt;
-                            operations.push([user, op, resource, "TRADE_BANK"]);
+                            if (resource) {
+                                operations.push([user, op, resource, "TRADE_BANK"]);
+                            }
                         }
                     }
                     break;
