@@ -32,6 +32,11 @@
 
 .bar{
    background-color: rgb(30, 82, 151);
+   color: white;
+   text-align: right;
+   padding-right: 5px;
+   padding-left: 5px;
+   font-size: 11px;
 }
 
 .resource-div{
@@ -46,7 +51,7 @@
 }
 
 .d_div_span{
-   margin-left: 3px;
+   margin-left: 2px;
    font-size: 11px;
 }
 

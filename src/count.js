@@ -9,7 +9,7 @@
 const ROAD = "road";
 const SETTLEMENT = "settlement";
 const CITY = "city";
-const DEV_CARD = "development card";
+
 const LUMBER = "lumber";
 const BRICK = "brick";
 const GRAIN = "grain";
@@ -17,9 +17,16 @@ const WOOL = "wool";
 const ORE = "ore";
 const UNKNOWN_CARD = "card";
 
+const MONOPOLY = "Monopoly";
+const KNIGHT = "Knight";
+const PLENTY = "Year of Plenty";
+const ROAD2 = "Road Building";
+const VP = "vp";
+const DEV_CARD = "development card";
 // Game configuration variables
 
-let RESOURCES_LIST = [LUMBER, BRICK, GRAIN, WOOL, ORE, UNKNOWN_CARD]; //rescardback
+let RESOURCES_LIST = [LUMBER, BRICK, GRAIN, WOOL, ORE]; //rescardback
+let DEV_LIST = [KNIGHT, MONOPOLY, PLENTY, ROAD2]; //rescardback
 
 // Scrapping variables
 let LOG_WRAPPER_ID = "game-log-text" // Class Id of log wrapper
@@ -29,8 +36,15 @@ let CARD_ICON = {
     [GRAIN]: "/dist/images/card_grain.svg",
     [WOOL]: "/dist/images/card_wool.svg",
     [ORE]: "/dist/images/card_ore.svg",
-    [UNKNOWN_CARD]: "/dist/images/card_rescardback.svg"
+    [UNKNOWN_CARD]: "/dist/images/card_rescardback.svg",
+    [DEV_CARD]: "/dist/images/card_devcardback.svg",
+    [KNIGHT]: "/dist/images/card_knight.svg",
+    [MONOPOLY]: "/dist/images/card_monopoly.svg",
+    [PLENTY]: "/dist/images/card_yearofplenty.svg",
+    [ROAD2]: "/dist/images/card_roadbuilding.svg",
+    [VP]: "/dist/images/card_vp.svg"
 };
+
 
 // Aux global variables
 let USER_COLORMAP = {};
@@ -52,6 +66,15 @@ let DICE_STATS = {
     11: 0,
     12: 0,
     max: 0,
+}
+
+let USED_DEV_CARDS = {
+    [KNIGHT]: 0,
+    [MONOPOLY]: 0,
+    [PLENTY]: 0,
+    [ROAD2]: 0,
+    [VP]: 0,
+    "BOUGHT": 0
 }
 
 // --------------------  Build initial HTML containers  --------------------- //
@@ -152,7 +175,7 @@ function execute_ops(operations) {
 
         let flag = operations[j][3]
         if (flag == "DICE_DATA") {
-            console.log("ROLLED "+operations[j][2])
+            console.log("ROLLED " + operations[j][2])
             DICE_STATS[operations[j][2]] += 1;
             DICE_STATS["max"] = Math.max(...Object.values(DICE_STATS))
         }
@@ -179,13 +202,13 @@ function execute_ops(operations) {
     buildChart();
 }
 
-function addUserChart(user){
-  // A div per user
+function addUserChart(user) {
+    // A div per user
     let user_data = RESOURCES_DATA[user];
     let userdiv = document.createElement("div");
     let user_hr = document.createElement("div");
     userdiv.classList.add("user-div")
-    userdiv.id = "userdiv_"+user
+    userdiv.id = "userdiv_" + user
 
     user_hr.innerText = user;
     user_hr.classList.add("user-div-hr")
@@ -198,13 +221,14 @@ function addUserChart(user){
 
         let resource_div = document.createElement("div");
         resource_div.classList.add("resource-div")
+
         let r_img = document.createElement("img");
         r_img.classList.add("r_div_img")
+        r_img.setAttribute("src", CARD_ICON[RESOURCES_LIST[i]]);
+
         let r_span = document.createElement("span");
         r_span.classList.add("r_div_span")
-        r_span.id = user+"_"+RESOURCES_LIST[i]
-
-        r_img.setAttribute("src", CARD_ICON[RESOURCES_LIST[i]]);
+        r_span.id = user + "_" + RESOURCES_LIST[i]
         let n = user_data[RESOURCES_LIST[i]];
         r_span.innerText = (n == 0) ? "" : `    ${n}`  // Only show existing
 
@@ -226,42 +250,90 @@ function buildChart() {
     Object.keys(RESOURCES_DATA).forEach((user) => {
 
         if (user != MY_USERNAME) {
-          addUserChart(user)
+            addUserChart(user)
         }
 
-
-       
     });
-        let dice_div = document.createElement("div");
-        let dice_hr = document.createElement("div");
-        dice_div.classList.add("user-div")
 
-        dice_hr.innerText = "Dice data";
-        dice_hr.classList.add("user-div-hr")
 
-        dice_div.appendChild(dice_hr);
-        for (i = 2; i < 13; i++) {
+    // STATS
+    let stats_div = document.createElement("div");
+    stats_div.classList.add("user-div")
 
-            let number_div = document.createElement("div");
-            number_div.classList.add("resource-div")
+    let cards_hr = document.createElement("div");
+    cards_hr.innerText = "Used cards";
+    cards_hr.classList.add("user-div-hr")
+    stats_div.appendChild(cards_hr);
+    for (let card of DEV_LIST) {
 
-            let r_span = document.createElement("div");
-            r_span.classList.add("d_div_span")
-            r_span.style.width = "20px"
-            r_span.innerText = `${i}`
+        let dev_card_div = document.createElement("div");
+        dev_card_div.classList.add("resource-div")
 
-            let bar = document.createElement("div");
-            bar.classList.add("bar")
-      
-            bar.style.width = DICE_STATS[i]*80/DICE_STATS["max"] + "px"
+        let dev_img = document.createElement("img");
+        dev_img.classList.add("r_div_img")
+        dev_img.setAttribute("src", CARD_ICON[card]);
 
-            number_div.appendChild(r_span);
-            number_div.appendChild(bar);
-            dice_div.appendChild(number_div);
+        let dev_span = document.createElement("span");
+        dev_span.classList.add("r_div_span")
+        dev_span.innerText = USED_DEV_CARDS[card];
 
+
+        dev_card_div.appendChild(dev_img)
+        dev_card_div.appendChild(dev_span)
+        stats_div.appendChild(dev_card_div)
+    }
+    let avcards_hr = document.createElement("div");
+    avcards_hr.innerText = "Available";
+    avcards_hr.classList.add("user-div-hr")
+    stats_div.appendChild(avcards_hr);
+
+    let avdev_card_div = document.createElement("div");
+    avdev_card_div.classList.add("resource-div")
+
+    let avdev_img = document.createElement("img");
+    avdev_img.classList.add("r_div_img")
+    avdev_img.setAttribute("src", CARD_ICON[DEV_CARD]);
+
+    let avdev_span = document.createElement("span");
+    avdev_span.classList.add("r_div_span")
+    avdev_span.innerText = 25 - USED_DEV_CARDS["BOUGHT"];
+
+    avdev_card_div.appendChild(avdev_img)
+    avdev_card_div.appendChild(avdev_span)
+    stats_div.appendChild(avdev_card_div)
+
+
+    let dice_hr = document.createElement("div");
+    dice_hr.innerText = "Dice stats";
+    dice_hr.classList.add("user-div-hr")
+    stats_div.appendChild(dice_hr);
+
+    for (i = 2; i < 13; i++) {
+
+        let number_div = document.createElement("div");
+        number_div.classList.add("resource-div")
+
+        let r_span = document.createElement("div");
+        r_span.classList.add("d_div_span")
+        r_span.style.width = "20px"
+        r_span.innerText = `${i}`
+
+        let bar = document.createElement("div");
+        bar.classList.add("bar")
+
+        bar.style.width = DICE_STATS[i] * 80 / DICE_STATS["max"] + "px"
+        if (DICE_STATS[i] !== 0) {
+            bar.innerText = DICE_STATS[i];
         }
-        // Add updated chart
-        USER_DATA_WRAPPER.append(dice_div);
+
+        number_div.appendChild(r_span);
+        number_div.appendChild(bar);
+        stats_div.appendChild(number_div);
+
+    }
+    // Add updated chart
+    USER_DATA_WRAPPER.append(stats_div);
+
 
 
 
@@ -319,6 +391,8 @@ function msg2operations(htmlMsg) {
                     if (used_card == "Monopoly") {
                         PREVIOUS_IS_MONOPOLY = true;
                     }
+                    USED_DEV_CARDS[used_card] += 1;
+
                     break;
                 };
 
@@ -395,6 +469,7 @@ function msg2operations(htmlMsg) {
                         operations.push([user, -1, GRAIN, "PURCHASE_CARD"]);
                         operations.push([user, -1, ORE, "PURCHASE_CARD"]);
                     }
+                    USED_DEV_CARDS["BOUGHT"] += 1;
                     break;
                 };
 
