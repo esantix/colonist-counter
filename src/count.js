@@ -25,6 +25,7 @@ const ROAD2 = "Road Building";
 const VP = "Vp";
 const DEV_CARD = "development card";
 
+
 // Game configuration variables
 const RESOURCES_LIST = [LUMBER, BRICK, GRAIN, WOOL, ORE];
 const DEV_LIST = [KNIGHT, MONOPOLY, PLENTY, ROAD2];
@@ -66,6 +67,7 @@ let GAME_ENDED = false;
 // Statistics
 let DICE_STATS = { 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0, max: 0 }
 let USED_DEV_CARDS = { [KNIGHT]: 0, [MONOPOLY]: 0, [PLENTY]: 0, [ROAD2]: 0, [VP]: 0, "BOUGHT": 0}
+let MAX_DEV_CARDS = { [KNIGHT]: 14, [MONOPOLY]: 2, [PLENTY]: 2, [ROAD2]: 2, [VP]: 5}
 
 
 // --------------------  INITIAL CORE ELEMENTS --------------------- //
@@ -323,7 +325,7 @@ function buildChart() {
 
         let dev_span = document.createElement("span");
         dev_span.classList.add("r_div_span")
-        dev_span.innerText = USED_DEV_CARDS[card];
+        dev_span.innerText = `${USED_DEV_CARDS[card]}/${MAX_DEV_CARDS[card]}`;
 
 
         dev_card_div.appendChild(dev_img)
@@ -409,11 +411,8 @@ function parseLogMsg(logHtmlElement) {
     try{
 
         let sec = logHtmlElement.classList[1]
-        console.log(sec)
         if(sec == "victory-text"){
-            console.log("GANASTE GUACHOOOO") 
             GAME_ENDED = true;  
-            TURNS=0;
             return false
     }
     } 
