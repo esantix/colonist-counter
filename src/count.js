@@ -1,15 +1,15 @@
 // Author: santiago93echevarria@gmail.com
-// 
 // Chrome Extension to help keep track of Colonist resource exchanges
-//
 
-// ----------------------------  GLOBALS ------------------------------------ //
 
-// Game keywords
+// ----------------------------  CONSTANTS ------------------------------------ //
+
+// Buildings
 const ROAD = "road";
 const SETTLEMENT = "settlement";
 const CITY = "city";
 
+// Resources
 const LUMBER = "lumber";
 const BRICK = "brick";
 const GRAIN = "grain";
@@ -17,20 +17,21 @@ const WOOL = "wool";
 const ORE = "ore";
 const UNKNOWN_CARD = "card";
 
+// Dev card log keyword
 const MONOPOLY = "Monopoly";
 const KNIGHT = "Knight";
 const PLENTY = "Year of Plenty";
 const ROAD2 = "Road Building";
-const VP = "vp";
+const VP = "Vp";
 const DEV_CARD = "development card";
-// Game configuration variables
 
-let RESOURCES_LIST = [LUMBER, BRICK, GRAIN, WOOL, ORE]; //rescardback
-let DEV_LIST = [KNIGHT, MONOPOLY, PLENTY, ROAD2]; //rescardback
+// Game configuration variables
+const RESOURCES_LIST = [LUMBER, BRICK, GRAIN, WOOL, ORE];
+const DEV_LIST = [KNIGHT, MONOPOLY, PLENTY, ROAD2];
 
 // Scrapping variables
-let LOG_WRAPPER_ID = "game-log-text" // Class Id of log wrapper
-let CARD_ICON = {
+const LOG_WRAPPER_ID = "game-log-text" // Class Id of log wrapper
+const CARD_ICON = {
     [LUMBER]: "/dist/images/card_lumber.svg",
     [BRICK]: "/dist/images/card_brick.svg",
     [GRAIN]: "/dist/images/card_grain.svg",
@@ -45,39 +46,29 @@ let CARD_ICON = {
     [VP]: "/dist/images/card_vp.svg"
 };
 
+// ----------------------------   PARAMETERS ------------------------------------ //
+let INCLUDE_SELF = false;
 
-// Aux global variables
+// ----------------------------  AUX VARIABLES ------------------------------------ //
+
+
 let USER_COLORMAP = {};
-let RESOURCES_DATA = {}; // User resources map
+let USERS_DATA = {}; // User resources map
 let MY_USERNAME = "";
+
+// States
 let PREVIOUS_IS_MONOPOLY = false; // Aux variable for parsing monopoly log
 let IS_OBSERVER_ACTIVE = false
 let IS_DATA_ACTIVE = false;
-let DICE_STATS = {
-    2: 0,
-    3: 0,
-    4: 0,
-    5: 0,
-    6: 0,
-    7: 0,
-    8: 0,
-    9: 0,
-    10: 0,
-    11: 0,
-    12: 0,
-    max: 0,
-}
+let TURNS = 0;
+let GAME_ENDED = false;
 
-let USED_DEV_CARDS = {
-    [KNIGHT]: 0,
-    [MONOPOLY]: 0,
-    [PLENTY]: 0,
-    [ROAD2]: 0,
-    [VP]: 0,
-    "BOUGHT": 0
-}
+// Statistics
+let DICE_STATS = { 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0, max: 0 }
+let USED_DEV_CARDS = { [KNIGHT]: 0, [MONOPOLY]: 0, [PLENTY]: 0, [ROAD2]: 0, [VP]: 0, "BOUGHT": 0}
 
-// --------------------  Build initial HTML containers  --------------------- //
+
+// --------------------  INITIAL CORE ELEMENTS --------------------- //
 
 const TOPBAR = document.createElement("div"); // Create top bar
 TOPBAR.classList.add("top-bar");
@@ -88,27 +79,62 @@ USER_DATA_WRAPPER.classList.add("user-div-wp")
 TOPBAR.appendChild(USER_DATA_WRAPPER);
 document.body.insertBefore(TOPBAR, document.body.firstChild);
 
-// ------------------------   Inicializar  ---------------------------------- //
 
-observeDOM();
 
-// --------------------------   Funciones  ---------------------------------- //
+// ------------------------   INIT  ---------------------------------- //
 
-function print(a) {
-    console.log(a)
+initOnLoad();
+
+
+// --------------------------  FUNCTIONS  ---------------------------------- //
+
+
+function reset(){
+    USER_COLORMAP = {};
+    USERS_DATA = {};
+    MY_USERNAME = "";
+    PREVIOUS_IS_MONOPOLY = false;
+    IS_OBSERVER_ACTIVE = false
+    IS_DATA_ACTIVE = false;
+    TURNS = 0;
+    GAME_ENDED = false;
+    DICE_STATS = { 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0, max: 0 }
+    USED_DEV_CARDS = { [KNIGHT]: 0, [MONOPOLY]: 0, [PLENTY]: 0, [ROAD2]: 0, [VP]: 0, "BOUGHT": 0}
 }
 
-function observeDOM() {
+function log_action(action) {
+    // Log actions with format
+    let user = action[0];
+    let amount = action[1];
+    let resource = action[2];
+    let flag = action[3];
 
-    const targetId = LOG_WRAPPER_ID;
+    if (flag == "DICE_DATA") {
+        console.log(`%c Turn ${TURNS}): ${user} rolled ${action[1] + action[2]}`, 'background: #222; color: #bada55')
+    }
+    else {
+        let color = USER_COLORMAP[user]
+        if (user == MY_USERNAME) {
+            // color = "white"
+        }
+        console.log(`%c ${user}%c : ${(amount == 1) ? "+1" : amount} ${resource} (${flag})`, `color: ${color}; background: rgba(255, 255, 255, 0.6)`, '')
+    }
 
-    const observer = new MutationObserver((mutationsList) => {
+
+}
+
+function initOnLoad() {
+    // Detect load of logs wrapper for initialization 
+    const LOG_LOADED_OBSERVER = new MutationObserver((mutationsList) => {
         for (let mutation of mutationsList) {
             if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
                 for (let node of mutation.addedNodes) {
-                    if (node.nodeType === 1 && node.id === targetId) {
-                        activate();
-                        observer.disconnect();
+                    if (node.nodeType === 1 && node.id === LOG_WRAPPER_ID) {
+                        console.clear()
+
+                        activate()
+                        //inspectCanvas()
+                        LOG_LOADED_OBSERVER.disconnect();
                         break;
                     }
                 }
@@ -116,84 +142,92 @@ function observeDOM() {
         }
     });
 
-    observer.observe(document.body, { childList: true, subtree: true });
+    LOG_LOADED_OBSERVER.observe(document.body, { childList: true, subtree: true });
 }
 
-function activate() {
-    // Activate funtion. Needs to called after logs div has loaded
-    setUsername()
-    removeAds();
+function activate(){
+    console.log("Activated")
     if (!IS_OBSERVER_ACTIVE) {
+
+        MY_USERNAME = document.getElementById('header_profile_username').innerText;
+        document.getElementById("in_game_ab_left").style.display = "none";
+        document.getElementById("in_game_ab_right").style.display = "none";
+        document.getElementById("in_game_ab_bottom").style.display = "none";
+        document.getElementById("in_game_ab_bottom_small").style.display = "none";
+        document.getElementById("remove_ad_in_game_right").style.display = "none";
+        document.getElementById("remove_ad_in_game_left").style.display = "none";
+
+        
+
         startLogObserver();
+        console.log(`%c Colonist Resource counter is active`, 'background: #222; color: #bada55')
     }
-}
-
-function setUsername() {
-    MY_USERNAME = document.getElementById('header_profile_username').innerText;
-    console.log(`Set username to ${MY_USERNAME}`);
-}
-
-function removeAds() {
-    // Need to clean adds to place data. Also.. who likes ads?
-    document.getElementById("in_game_ab_left").style.display = "none";
-    document.getElementById("in_game_ab_right").style.display = "none";
-    document.getElementById("in_game_ab_bottom").style.display = "none";
-    document.getElementById("in_game_ab_bottom_small").style.display = "none";
 }
 
 function startLogObserver() {
     // Refresh data on changes on log element 
     const targetNode = document.getElementById(LOG_WRAPPER_ID);
+    const LOG_OBSERVER = new MutationObserver(function (mutationsList, observer) {
 
-    const observer = new MutationObserver(function (mutationsList, observer) {
         for (let mutation of mutationsList) {
             if (mutation.type === "childList") {
                 mutation.addedNodes.forEach(node => {
-                    if (!IS_DATA_ACTIVE) {
-                        buildChart()
-                        IS_DATA_ACTIVE = true;
+                    if (GAME_ENDED){
+                        LOG_OBSERVER.disconnect()
+                        IS_OBSERVER_ACTIVE = false;
+                        reset();
+                    }else{
+                        if (!IS_DATA_ACTIVE) {
+                            buildChart();
+                            IS_DATA_ACTIVE = true;
+                        }
+                        let operations = parseLogMsg(node)
+                        if (operations === false){
+                            return 0
+                        }
+                        if (operations.length > 0) {
+                            execute_ops(operations)
+                        }
                     }
-                    let operations = msg2operations(node)
-                    if (operations.length > 0) {
-                        execute_ops(operations)
-                    }
-
                 })
-                // refreshData();
+    
             }
         }
     });
 
-    const config = { attributes: true, childList: true, subtree: true };
-    observer.observe(targetNode, config);
+    LOG_OBSERVER.observe(targetNode, { attributes: true, childList: true, subtree: true });
     IS_OBSERVER_ACTIVE = true;
 }
 
 function execute_ops(operations) {
     for (let j = 0; j < operations.length; j++) {
 
+        action = operations[j]
+        log_action(action)
 
-        let flag = operations[j][3]
+        let flag = action[3]
         if (flag == "DICE_DATA") {
-            console.log("ROLLED " + operations[j][2])
-            DICE_STATS[operations[j][2]] += 1;
+            let d1 = action[1]
+            let d2 = action[2]
+            DICE_STATS[d1 + d2] += 1;
             DICE_STATS["max"] = Math.max(...Object.values(DICE_STATS))
         }
         else {
             //console.log(actions[j])
-            console.log(operations[j])
-            let user = operations[j][0]; // Who to modify resources to
-            let amount = operations[j][1]; // number of resource to add 
-            let resource = operations[j][2]; //
+
+
+            let user = action[0]; // Who to modify resources to
+            let amount = action[1]; // number of resource to add 
+            let resource = action[2]; //
             if (user) {
-                if (!(user in RESOURCES_DATA)) { RESOURCES_DATA[user] = { [ORE]: 0, [WOOL]: 0, [BRICK]: 0, [GRAIN]: 0, [LUMBER]: 0, [UNKNOWN_CARD]: 0 }; }
+                if (!(user in USERS_DATA)) { USERS_DATA[user] = { [ORE]: 0, [WOOL]: 0, [BRICK]: 0, [GRAIN]: 0, [LUMBER]: 0, [UNKNOWN_CARD]: 0 }; }
             }
 
 
-            RESOURCES_DATA[user][resource] += amount;
+            USERS_DATA[user][resource] += amount;
             if (flag == "MONOPOLY") {
-                for (let player in RESOURCES_DATA) {
-                    if (player != user) { RESOURCES_DATA[player][resource] = 0; }
+                for (let player in USERS_DATA) {
+                    if (player != user) { USERS_DATA[player][resource] = 0; }
                 }
             }
 
@@ -204,33 +238,44 @@ function execute_ops(operations) {
 
 function addUserChart(user) {
     // A div per user
-    let user_data = RESOURCES_DATA[user];
+    let user_data = USERS_DATA[user];
     let userdiv = document.createElement("div");
     let user_hr = document.createElement("div");
     userdiv.classList.add("user-div")
-    userdiv.id = "userdiv_" + user
+    
+    let id = "userdiv_" + user
+    let hr_class  ="user-div-hr"
+    let hdr = user
 
-    user_hr.innerText = user;
-    user_hr.classList.add("user-div-hr")
+    if (user == MY_USERNAME){
+        id = "userdiv_self"
+        hdr = "(You)"
+
+}
+
+    userdiv.id = id
+
+    user_hr.innerText = hdr;
+    user_hr.classList.add(hr_class)
 
     let user_color = USER_COLORMAP[user];
     user_hr.style.color = user_color
 
     userdiv.appendChild(user_hr);
-    for (i = 0; i < RESOURCES_LIST.length; i++) {
+    for (let resource of RESOURCES_LIST) {
 
         let resource_div = document.createElement("div");
         resource_div.classList.add("resource-div")
 
         let r_img = document.createElement("img");
         r_img.classList.add("r_div_img")
-        r_img.setAttribute("src", CARD_ICON[RESOURCES_LIST[i]]);
+        r_img.setAttribute("src", CARD_ICON[resource]);
 
         let r_span = document.createElement("span");
         r_span.classList.add("r_div_span")
-        r_span.id = user + "_" + RESOURCES_LIST[i]
-        let n = user_data[RESOURCES_LIST[i]];
-        r_span.innerText = (n == 0) ? "" : `    ${n}`  // Only show existing
+        r_span.id = user + "_" + resource
+        let n = user_data[resource];
+        r_span.innerText = (n == 0) ? "" : `    ${n}`
 
 
         resource_div.appendChild(r_img);
@@ -242,24 +287,27 @@ function addUserChart(user) {
     USER_DATA_WRAPPER.append(userdiv);
 }
 
-
 function buildChart() {
     // Build graphical display of resources
+    USER_DATA_WRAPPER.innerHTML = ""; // Needs to be cleared each time
 
-    USER_DATA_WRAPPER.innerHTML = ""; // Needs to be cleared each time. Calculation is the sum of all logs
-    Object.keys(RESOURCES_DATA).forEach((user) => {
 
-        if (user != MY_USERNAME) {
+    // CREATE USERS CHARTS
+    Object.keys(USERS_DATA).forEach((user) => {
+
+        if (user != MY_USERNAME || INCLUDE_SELF) {
             addUserChart(user)
         }
 
     });
 
 
-    // STATS
+    // CREATE STATS
     let stats_div = document.createElement("div");
     stats_div.classList.add("user-div")
 
+
+    // DEV CARDS STATS
     let cards_hr = document.createElement("div");
     cards_hr.innerText = "Used cards";
     cards_hr.classList.add("user-div-hr")
@@ -302,7 +350,7 @@ function buildChart() {
     avdev_card_div.appendChild(avdev_span)
     stats_div.appendChild(avdev_card_div)
 
-
+    // DICE STATS
     let dice_hr = document.createElement("div");
     dice_hr.innerText = "Dice stats";
     dice_hr.classList.add("user-div-hr")
@@ -320,6 +368,7 @@ function buildChart() {
 
         let bar = document.createElement("div");
         bar.classList.add("bar")
+        bar.id = "dice_stat_bar_" + i
 
         bar.style.width = DICE_STATS[i] * 80 / DICE_STATS["max"] + "px"
         if (DICE_STATS[i] !== 0) {
@@ -331,52 +380,79 @@ function buildChart() {
         stats_div.appendChild(number_div);
 
     }
+    let number_div = document.createElement("div");
+        number_div.classList.add("resource-div")
+
+        let turns_span = document.createElement("div");
+        turns_span.classList.add("d_div_span")
+        turns_span.style.width = "100px"
+        turns_span.innerText = `Turns: ${TURNS}`
+
+
+        number_div.appendChild(turns_span);
+        stats_div.appendChild(number_div);
+
+
+
+
+
+
     // Add updated chart
     USER_DATA_WRAPPER.append(stats_div);
 
-
-
-
-
 }
 
-
-function msg2operations(htmlMsg) {
+function parseLogMsg(logHtmlElement) {
     // Parses html message into a list of operations
-    // Return [(user, amount_to_add, resource, <FLAG>), ...]
-    var operations = [];
+    // Return list of [user, amount_to_add, resource, flag]
+    var operations = []; 
+    try{
+
+        let sec = logHtmlElement.classList[1]
+        console.log(sec)
+        if(sec == "victory-text"){
+            console.log("GANASTE GUACHOOOO") 
+            GAME_ENDED = true;  
+            TURNS=0;
+            return false
+    }
+    } 
+    catch(e){}
     try {
+        
+        let msgCtn = logHtmlElement.childNodes[1].childNodes;
+        var user = logHtmlElement.children[1].children[0].innerText.trim(); // no funciona para You Stole
+        
+       
 
-        let msgCtn = htmlMsg.childNodes[1].childNodes;
-        var user = htmlMsg.children[1].children[0].innerText.trim(); // no funciona para You Stole
-
-        USER_COLORMAP[user] = htmlMsg.children[1].children[0].style.color // Solo al existir log puedo scrappear color de usuario
+        USER_COLORMAP[user] = logHtmlElement.children[1].children[0].style.color // Solo al existir log puedo scrappear color de usuario
         // Si el mensaje anterior es que suó monopoly
         if (PREVIOUS_IS_MONOPOLY) {
             let resource = msgCtn[2].alt;
             let amount = parseInt(msgCtn[1].textContent.replace("stole", "").trim());
             operations.push([user, amount, resource, "MONOPOLY"]);
             PREVIOUS_IS_MONOPOLY = false;
-
-            // Si el mensaje es You stole es una excepcion. (You se tiene que mapear a MY_USERNAME)
-        } else if (htmlMsg.innerText.trim().startsWith("You stole")) {
+        }             
+        else if (logHtmlElement.innerText.trim().startsWith("You stole")) {
             let stolen = msgCtn[3].innerText;
             let resource = msgCtn[1].alt;
-            operations.push([MY_USERNAME, +1, resource]);
-            operations.push([stolen, -1, resource, "YOU_STOLE"]);
+            operations.push([MY_USERNAME, +1, resource, "STOLE"]);
+            operations.push([stolen, -1, resource, "GOT_STOLEN"]);
 
         } else {
             let action = msgCtn[1].textContent.trim(); // Accion
             // print(action)
             switch (action) {
                 case "rolled": {
+                    TURNS += 1;
                     let d1 = parseInt(msgCtn[2].alt.slice(-1));
                     let d2 = parseInt(msgCtn[4].alt.slice(-1));
-                    operations.push([d1, d2, d1 + d2, "DICE_DATA"]);
+                    operations.push([user, d1, d2, "DICE_DATA"]);
                     break;
                 };
 
                 case "received starting resources": {
+                    TURNS += 2;
                     for (let i = 2; i < msgCtn.length; i++) {
                         let resource = msgCtn[i].alt;
                         if (resource) {
@@ -388,7 +464,7 @@ function msg2operations(htmlMsg) {
 
                 case "used": {// Uso de carta Monopoly. El siguiente mensaje muestra que se robó
                     let used_card = msgCtn[2].innerText.trim();
-                    if (used_card == "Monopoly") {
+                    if (used_card == MONOPOLY) {
                         PREVIOUS_IS_MONOPOLY = true;
                     }
                     USED_DEV_CARDS[used_card] += 1;
@@ -400,7 +476,7 @@ function msg2operations(htmlMsg) {
                     for (let i = 2; i < msgCtn.length; i++) {
                         let resource = msgCtn[i].alt;
                         if (resource) {
-                            operations.push([user, +1, resource, "RECIEVED_BANK_1"]);
+                            operations.push([user, +1, resource, "RECIEVED_FROM_BANK"]);
                         }
                     }
                     break;
@@ -409,7 +485,7 @@ function msg2operations(htmlMsg) {
                     for (let i = 2; i < msgCtn.length; i++) {
                         let resource = msgCtn[i].alt;
                         if (resource) {
-                            operations.push([user, +1, resource, "RECIEVED_BANK_2"]);
+                            operations.push([user, +1, resource, "TOOK_FROM_BANK"]);
                         }
                     }
                     break;
@@ -441,7 +517,7 @@ function msg2operations(htmlMsg) {
                     break;
                 };
 
-                case "traded": {// Player trade
+                case "gave": {// Player trade
                     let l = parseInt(msgCtn.length) - 1;
                     let user2 = msgCtn[l].innerText;
 
@@ -496,7 +572,7 @@ function msg2operations(htmlMsg) {
                     let resource = msgCtn[2].alt;
                     if (msgCtn.length == 4) { // stole you o You stol
                         operations.push([user, +1, resource, "STOLE"]);
-                        operations.push([MY_USERNAME, -1, resource, "STOLEN"]);
+                        operations.push([MY_USERNAME, -1, resource, "GOT_STOLEN"]);
                     }
                     else {
                         let stoled = msgCtn[4].innerText;
