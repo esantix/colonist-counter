@@ -16,6 +16,16 @@
    
 }
 
+#userdiv_self{
+   background-image: linear-gradient(to bottom,#edf2ff,#b0ccdd);
+}
+
+.user-div-hr-self{
+   font-weight: 700;
+   margin-bottom: 3px;
+   text-align: center;
+}
+
 .user-div-hr{
    font-weight: 700;
    margin-bottom: 3px;
