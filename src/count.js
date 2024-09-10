@@ -175,6 +175,7 @@ function startLogObserver() {
                     if (GAME_ENDED){
                         LOG_OBSERVER.disconnect()
                         IS_OBSERVER_ACTIVE = false;
+                        reset();
                     }else{
                         if (!IS_DATA_ACTIVE) {
                             buildChart();
