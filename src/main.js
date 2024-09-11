@@ -420,7 +420,13 @@ function updateChart() {
     // Update dice stats
     for (i = 2; i < 13; i++) {
         let e = document.getElementById("dice_stat_bar_" + i)
-        e.innerText = DICE_STATS[i];
+        if (DICE_STATS[i] == 0){
+            e.style.display = "none";
+        }
+        else{
+            e.style.display = "block";
+        }
+        e.innerText =  (DICE_STATS[i] == 0) ? "" : `    ${DICE_STATS[i]}` ;
         e.style.width = DICE_STATS[i] * 80 / DICE_STATS["max"] + "px"
     }
 }
@@ -432,7 +438,8 @@ function addInitialHtml(){
             <div class="data-wrapper stats" id="stats-data-wrapper">
                 <div class="data-div stats-div">
 
-                    <div class="user-div-hr"> Used cards</div>
+                    <div class="user-div-hr"> Statistics</div>
+                    <div class="data-div-hr"> Played cards</div>
                     <div class="resource-div">
                         <img class="r_div_img" src="/dist/images/card_knight.svg" alt="">
                         <span id="card_count_knight" class="r_div_span">0/14</span>
@@ -450,66 +457,66 @@ function addInitialHtml(){
                         <span id="card_count_roadbuilding" class="r_div_span">0/2</span>
                     </div>
                     
-                    <div class="user-div-hr"> Available</div>
+                    <div class="data-div-hr"> Cards in bank</div>
                     <div class="resource-div">
                         <img class="r_div_img" src="/dist/images/card_devcardback.svg" alt="">
                         <span id="card_count_all" class="r_div_span">25</span>
                     </div>
         
-                    <div class="user-div-hr"> Dice stats</div>
-                    <div class="resource-div">
+                    <div class="data-div-hr"> Dice stats</div>
+                    <div class="d_div">
                         <span class="d_div_span">2</span>
-                        <div class="bar" id="dice_stat_bar_2">0</div>
+                        <div class="d_bar" id="dice_stat_bar_2"></div>
                     </div>
                 
-                    <div class="resource-div">
+                    <div class="d_div">
                         <span class="d_div_span">3</span>
-                        <div class="bar" id="dice_stat_bar_3">0</div>
+                        <div class="d_bar" id="dice_stat_bar_3"></div>
                     </div>
                 
-                    <div class="resource-div">
+                    <div class="d_div">
                         <span class="d_div_span">4</span>
-                        <div class="bar" id="dice_stat_bar_4">0</div>
+                        <div class="d_bar" id="dice_stat_bar_4"></div>
                     </div>
                 
-                    <div class="resource-div">
+                    <div class="d_div">
                         <span class="d_div_span">5</span>
-                        <div class="bar" id="dice_stat_bar_5">0</div>
+                        <div class="d_bar" id="dice_stat_bar_5"></div>
                     </div>
                 
-                    <div class="resource-div">
+                    <div class="d_div">
                         <span class="d_div_span">6</span>
-                        <div class="bar" id="dice_stat_bar_6">0</div>
+                        <div class="d_bar" id="dice_stat_bar_6"></div>
                     </div>
                 
-                    <div class="resource-div">
+                    <div class="d_div">
                         <span class="d_div_span">7</span>
-                        <div class="bar" id="dice_stat_bar_7">0</div>
+                        <div class="d_bar" id="dice_stat_bar_7"></div>
                     </div>
                 
-                    <div class="resource-div">
+                    <div class="d_div">
                         <span class="d_div_span">8</span>
-                        <div class="bar" id="dice_stat_bar_8">0</div>
+                        <div class="d_bar" id="dice_stat_bar_8"></div>
                     </div>
                 
-                    <div class="resource-div">
+                    <div class="d_div">
                         <span class="d_div_span">9</span>
-                        <div class="bar" id="dice_stat_bar_9">0</div>
+                        <div class="d_bar" id="dice_stat_bar_9"></div>
                     </div>
                 
-                    <div class="resource-div">
+                    <div class="d_div">
                         <span class="d_div_span">10</span>
-                        <div class="bar" id="dice_stat_bar_10">0</div>
+                        <div class="d_bar" id="dice_stat_bar_10"></div>
                     </div>
                 
-                    <div class="resource-div">
+                    <div class="d_div">
                         <span class="d_div_span">11</span>
-                        <div class="bar" id="dice_stat_bar_11">0</div>
+                        <div class="d_bar" id="dice_stat_bar_11"></div>
                     </div>
                 
-                    <div class="resource-div">
+                    <div class="d_div">
                         <span class="d_div_span">12</span>
-                        <div class="bar" id="dice_stat_bar_12">0</div>
+                        <div class="d_bar" id="dice_stat_bar_12"></div>
                     </div>
                 </div>
             </div>
@@ -520,26 +527,33 @@ function addUserBlock(user) {
     document.getElementById("user-data-wrapper").innerHTML += `
         <div class="data-div user-div" id="userdiv_${user}">
             <div class="user-div-hr" style="color:${USER_COLORMAP[user]};">${user}</div>
-            <div class="resource-div">
-                <img class="r_div_img" src="/dist/images/card_lumber.svg">
-                <span class="r_div_span" id="${user}_lumber"> </span>
+           
+            <div class="r_div_wp">
+          
+                <div class="r_div">
+                    <img class="r_div_img" src="/dist/images/card_lumber.svg">
+                    <span class="r_div_span" id="${user}_lumber"> </span>
+                </div>
+                <div class="r_div">
+                    <img class="r_div_img" src="/dist/images/card_brick.svg">
+                    <span class="r_div_span" id="${user}_brick"></span>
+                </div>
+                <div class="r_div">
+                    <img class="r_div_img" src="/dist/images/card_wool.svg">
+                    <span class="r_div_span" id="${user}_wool"></span>
+                </div>
+                <div class="r_div">
+                    <img class="r_div_img" src="/dist/images/card_grain.svg">
+                    <span class="r_div_span" id="${user}_grain"></span>
+                </div>
+                <div class="r_div">
+                    <img class="r_div_img" src="/dist/images/card_ore.svg">
+                    <span class="r_div_span" id="${user}_ore"></span>
+                </div>
+                
             </div>
-            <div class="resource-div">
-                <img class="r_div_img" src="/dist/images/card_brick.svg">
-                <span class="r_div_span" id="${user}_brick"></span>
-            </div>
-            <div class="resource-div">
-                <img class="r_div_img" src="/dist/images/card_wool.svg">
-                <span class="r_div_span" id="${user}_wool"></span>
-            </div>
-            <div class="resource-div">
-                <img class="r_div_img" src="/dist/images/card_grain.svg">
-                <span class="r_div_span" id="${user}_grain"></span>
-            </div>
-            <div class="resource-div">
-                <img class="r_div_img" src="/dist/images/card_ore.svg">
-                <span class="r_div_span" id="${user}_ore"></span>
-            </div>
+                
+
         </div>`
 }
 
