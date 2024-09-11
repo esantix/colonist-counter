@@ -45,6 +45,7 @@
 
 
 .r_div_wp {
+   margin-top: 8px;
    display: flex;
    flex-direction: row;
 }
@@ -53,14 +54,16 @@
    display: flex;
    flex-direction: column;
    color: black;
-   margin-left: 5px;
+   margin-left: 2px;
+   margin-right: 2px;
    margin-bottom: 2px;
 }
 
 .r_div_img {
-   height: 23px;
-   width: 15px;
+    width: 18px;
 }
+
+
 
 .r_div_span {
    margin-left: 3px;
@@ -88,6 +91,9 @@
 
 }
 
+.d_div_img {
+   width: 22px;
+}
 
 .d_div_span {
    margin-left: 2px;

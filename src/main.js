@@ -440,26 +440,26 @@ function addInitialHtml(){
 
                     <div class="user-div-hr"> Statistics</div>
                     <div class="data-div-hr"> Played cards</div>
-                    <div class="resource-div">
-                        <img class="r_div_img" src="/dist/images/card_knight.svg" alt="">
+                    <div class="d_div">
+                        <img class="d_div_img" src="/dist/images/card_knight.svg" alt="">
                         <span id="card_count_knight" class="r_div_span">0/14</span>
                     </div>
-                    <div class="resource-div">
-                        <img class="r_div_img" src="/dist/images/card_monopoly.svg" alt="">
+                    <div class="d_div">
+                        <img class="d_div_img" src="/dist/images/card_monopoly.svg" alt="">
                         <span id="card_count_monopoly" class="r_div_span">0/2</span>
                     </div>
-                    <div class="resource-div">
-                        <img class="r_div_img" src="/dist/images/card_yearofplenty.svg" alt="">
+                    <div class="d_div">
+                        <img class="d_div_img" src="/dist/images/card_yearofplenty.svg" alt="">
                         <span id="card_count_yearofplenty" class="r_div_span">0/2</span>
                     </div>
-                    <div class="resource-div">
-                        <img class="r_div_img" src="/dist/images/card_roadbuilding.svg" alt="">
+                    <div class="d_div">
+                        <img class="d_div_img" src="/dist/images/card_roadbuilding.svg" alt="">
                         <span id="card_count_roadbuilding" class="r_div_span">0/2</span>
                     </div>
                     
                     <div class="data-div-hr"> Cards in bank</div>
-                    <div class="resource-div">
-                        <img class="r_div_img" src="/dist/images/card_devcardback.svg" alt="">
+                    <div class="d_div">
+                        <img class="d_div_img" src="/dist/images/card_devcardback.svg" alt="">
                         <span id="card_count_all" class="r_div_span">25</span>
                     </div>
         
@@ -527,7 +527,6 @@ function addUserBlock(user) {
     document.getElementById("user-data-wrapper").innerHTML += `
         <div class="data-div user-div" id="userdiv_${user}">
             <div class="user-div-hr" style="color:${USER_COLORMAP[user]};">${user}</div>
-           
             <div class="r_div_wp">
           
                 <div class="r_div">
@@ -552,9 +551,8 @@ function addUserBlock(user) {
                 </div>
                 
             </div>
-                
-
-        </div>`
+        </div>
+        `
 }
 
 // -------------------------------------------------------------------------------- //
