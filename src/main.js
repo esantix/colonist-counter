@@ -1,7 +1,6 @@
 // Author: santiago93echevarria@gmail.com
 // Chrome Extension to help keep track of Colonist resource exchanges
 
-
 // ----------------------------  CONSTANTS ------------------------------------ //
 
 // Buildings
@@ -25,9 +24,8 @@ const ROAD2 = "Road Building";
 const VP = "Vp";
 const DEV_CARD = "development card";
 
-
 // Game configuration variables
-const RESOURCES_LIST = [LUMBER, BRICK, GRAIN, WOOL, ORE];
+const RESOURCES_LIST = [LUMBER, BRICK, WOOL, GRAIN, ORE];
 const DEV_LIST = [KNIGHT, MONOPOLY, PLENTY, ROAD2];
 
 // Scrapping variables
@@ -48,17 +46,16 @@ const CARD_ICON = {
 };
 
 // ----------------------------   PARAMETERS ------------------------------------ //
-let INCLUDE_SELF = true;
+let INCLUDE_SELF = false;
 
 // ----------------------------  AUX VARIABLES ------------------------------------ //
-
 
 let USER_COLORMAP = {};
 let USERS_DATA = {}; // User resources map
 let MY_USERNAME = "";
 
 // States
-let PREVIOUS_IS_MONOPOLY = false; // Aux variable for parsing monopoly log
+let PREVIOUS_IS_MONOPOLY = false;
 let IS_OBSERVER_ACTIVE = false
 let IS_DATA_ACTIVE = false;
 let TURNS = 0;
@@ -69,24 +66,11 @@ let DICE_STATS = { 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0,
 let USED_DEV_CARDS = { [KNIGHT]: 0, [MONOPOLY]: 0, [PLENTY]: 0, [ROAD2]: 0, [VP]: 0, "BOUGHT": 0 }
 let MAX_DEV_CARDS = { [KNIGHT]: 14, [MONOPOLY]: 2, [PLENTY]: 2, [ROAD2]: 2, [VP]: 5 }
 
-// ------------------------   INIT  ---------------------------------- //
+// ------------------------   INITIALIZATION  ---------------------------------- //
 
 initOnLoad();
 
-
-// --------------------------  FUNCTIONS  ---------------------------------- //
-
-function resetData() {
-    USER_COLORMAP = {};
-    USERS_DATA = {};
-    PREVIOUS_IS_MONOPOLY = false;
-    IS_OBSERVER_ACTIVE = false
-    IS_DATA_ACTIVE = false;
-    TURNS = 0;
-    GAME_ENDED = false;
-    DICE_STATS = { 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0, max: 0 }
-    USED_DEV_CARDS = { [KNIGHT]: 0, [MONOPOLY]: 0, [PLENTY]: 0, [ROAD2]: 0, [VP]: 0, "BOUGHT": 0 }
-}
+// ------------------------   INITIALIZATION FUNCTIONS  ---------------------------------- //
 
 function initOnLoad() {
     // Detect load of logs wrapper for initialization 
@@ -96,9 +80,7 @@ function initOnLoad() {
                 for (let node of mutation.addedNodes) {
                     if (node.nodeType === 1 && node.id === LOG_WRAPPER_ID) {
                         console.clear()
-
                         init()
-                        //inspectCanvas()
                         LOG_LOADED_OBSERVER.disconnect();
                         break;
                     }
@@ -113,22 +95,10 @@ function initOnLoad() {
 function init() {
 
     if (!IS_OBSERVER_ACTIVE) {
-        const TOPBAR = document.createElement("div"); // Create top bar
-        TOPBAR.classList.add("main-extention-container");
 
-        const USER_DATA_WRAPPER = document.createElement("div"); // Div for data display
-        USER_DATA_WRAPPER.classList.add("data-wrapper")
-        USER_DATA_WRAPPER.classList.add("user")
-        USER_DATA_WRAPPER.id = "user-data-wrapper"
-        TOPBAR.appendChild(USER_DATA_WRAPPER);
+        addInitialHtml()
 
-        const STATS_DATA_WRAPPER = document.createElement("div"); // Div for data display
-        STATS_DATA_WRAPPER.classList.add("data-wrapper")
-        STATS_DATA_WRAPPER.classList.add("stats")
-        STATS_DATA_WRAPPER.innerHTML = stat()
-        TOPBAR.appendChild(STATS_DATA_WRAPPER);
-
-        document.body.insertBefore(TOPBAR, document.body.firstChild);
+        // TOPBAR.appendChild(STATS_DATA_WRAPPER);
         MY_USERNAME = document.getElementById('header_profile_username').innerText;
         document.getElementById("in_game_ab_left").style.display = "none";
         document.getElementById("in_game_ab_right").style.display = "none";
@@ -181,97 +151,9 @@ function startLogObserver() {
 
     LOG_OBSERVER.observe(targetNode, { attributes: true, childList: true, subtree: true });
     IS_OBSERVER_ACTIVE = true;
-    resetData()
 }
 
-function execute_ops(operations) {
-    for (let j = 0; j < operations.length; j++) {
-
-        action = operations[j]
-        log_action(action)
-
-        let flag = action[3]
-        if (flag == "DICE_DATA") {
-            let d1 = action[1]
-            let d2 = action[2]
-            DICE_STATS[d1 + d2] += 1;
-            DICE_STATS["max"] = Math.max(...Object.values(DICE_STATS))
-        }
-        else {
-            //console.log(actions[j])
-
-
-            let user = action[0]; // Who to modify resources to
-            let amount = action[1]; // number of resource to add 
-            let resource = action[2]; //
-            if (user) {
-                if (!(user in USERS_DATA)) { USERS_DATA[user] = { [ORE]: 0, [WOOL]: 0, [BRICK]: 0, [GRAIN]: 0, [LUMBER]: 0, [UNKNOWN_CARD]: 0 }; }
-            }
-
-
-            USERS_DATA[user][resource] += amount;
-            if (flag == "MONOPOLY") {
-                for (let player in USERS_DATA) {
-                    if (player != user) { USERS_DATA[player][resource] = 0; }
-                }
-            }
-
-        }
-    }
-}
-
-function updateChart() {
-    Object.keys(USERS_DATA).forEach((user) => {
-
-        let user_div = document.getElementById("userdiv_" + user)
-        if (!user_div && (user != MY_USERNAME || INCLUDE_SELF)) {
-            addUserBlock(user)
-        }
-        for (let resource of RESOURCES_LIST) {
-            let user_res_div = document.getElementById(user + "_" + resource)
-            let n = USERS_DATA[user][resource];
-            user_res_div.innerText = (n == 0) ? "" : `    ${n}`
-
-        }
-
-
-    });
-    // CREATE STATS
-    document.getElementById("card_count_knight").innerText = `${USED_DEV_CARDS[KNIGHT]}/${MAX_DEV_CARDS[KNIGHT]}`;
-    document.getElementById("card_count_monopoly").innerText = `${USED_DEV_CARDS[MONOPOLY]}/${MAX_DEV_CARDS[MONOPOLY]}`;
-    document.getElementById("card_count_yearofplenty").innerText = `${USED_DEV_CARDS[PLENTY]}/${MAX_DEV_CARDS[PLENTY]}`;
-    document.getElementById("card_count_roadbuilding").innerText = `${USED_DEV_CARDS[ROAD2]}/${MAX_DEV_CARDS[ROAD2]}`;
-
-    document.getElementById("card_count_all").innerText = 25 - USED_DEV_CARDS["BOUGHT"];
-
-    for (i = 2; i < 13; i++) {
-
-        let e = document.getElementById("dice_stat_bar_" + i)
-        e.innerText = DICE_STATS[i];
-        e.style.width = DICE_STATS[i] * 80 / DICE_STATS["max"] + "px"
-    }
-}
-
-function log_action(action) {
-    // Log actions with format
-    let user = action[0];
-    let amount = action[1];
-    let resource = action[2];
-    let flag = action[3];
-
-    if (flag == "DICE_DATA") {
-        console.log(`%c Turn ${TURNS}): ${user} rolled ${action[1] + action[2]}`, 'background: #222; color: #bada55')
-    }
-    else {
-        let color = USER_COLORMAP[user]
-        if (user == MY_USERNAME) {
-            // color = "white"
-        }
-        console.log(`%c ${user}%c : ${(amount == 1) ? "+1" : amount} ${resource} (${flag})`, `color: ${color}; background: rgba(255, 255, 255, 0.6)`, '')
-    }
-
-
-}
+// ------------------------  OPERATIONAL FUNCTIONS  ---------------------------------- //
 
 function parseLogMsg(logHtmlElement) {
     // Parses html message into a list of operations
@@ -449,127 +331,216 @@ function parseLogMsg(logHtmlElement) {
     return operations;
 }
 
-function stat() {
-    return `
-  <div class="data-div stats-div">
+function execute_ops(operations) {
+    for (let j = 0; j < operations.length; j++) {
 
-    <div class="user-div-hr"> Used cards</div>
-    <div class="resource-div">
-        <img class="r_div_img" src="/dist/images/card_knight.svg" alt="">
-        <span id="card_count_knight" class="r_div_span">0/14</span>
-    </div>
-    <div class="resource-div">
-        <img class="r_div_img" src="/dist/images/card_monopoly.svg" alt="">
-        <span id="card_count_monopoly" class="r_div_span">0/2</span>
-    </div>
-    <div class="resource-div">
-        <img class="r_div_img" src="/dist/images/card_yearofplenty.svg" alt="">
-        <span id="card_count_yearofplenty" class="r_div_span">0/2</span>
-    </div>
-    <div class="resource-div">
-        <img class="r_div_img" src="/dist/images/card_roadbuilding.svg" alt="">
-        <span id="card_count_roadbuilding" class="r_div_span">0/2</span>
-    </div>
-    
-    <div class="user-div-hr"> Available</div>
-    <div class="resource-div">
-        <img class="r_div_img" src="/dist/images/card_devcardback.svg" alt="">
-        <span id="card_count_all" class="r_div_span">25</span>
-    </div>
+        action = operations[j]
+        log_action(action)
 
-    <div class="user-div-hr"> Dice stats</div>
-    <div class="resource-div">
-        <span class="d_div_span">2</span>
-        <div class="bar" id="dice_stat_bar_2">0</div>
-    </div>
-
-    <div class="resource-div">
-        <span class="d_div_span">3</span>
-        <div class="bar" id="dice_stat_bar_3">0</div>
-    </div>
-
-    <div class="resource-div">
-        <span class="d_div_span">4</span>
-        <div class="bar" id="dice_stat_bar_4">0</div>
-    </div>
-
-    <div class="resource-div">
-        <span class="d_div_span">5</span>
-        <div class="bar" id="dice_stat_bar_5">0</div>
-    </div>
-
-    <div class="resource-div">
-        <span class="d_div_span">6</span>
-        <div class="bar" id="dice_stat_bar_6">0</div>
-    </div>
-
-    <div class="resource-div">
-        <span class="d_div_span">7</span>
-        <div class="bar" id="dice_stat_bar_7">0</div>
-    </div>
-
-    <div class="resource-div">
-        <span class="d_div_span">8</span>
-        <div class="bar" id="dice_stat_bar_8">0</div>
-    </div>
-
-    <div class="resource-div">
-        <span class="d_div_span">9</span>
-        <div class="bar" id="dice_stat_bar_9">0</div>
-    </div>
-
-    <div class="resource-div">
-        <span class="d_div_span">10</span>
-        <div class="bar" id="dice_stat_bar_10">0</div>
-    </div>
-
-    <div class="resource-div">
-        <span class="d_div_span">11</span>
-        <div class="bar" id="dice_stat_bar_11">0</div>
-    </div>
-
-    <div class="resource-div">
-        <span class="d_div_span">12</span>
-        <div class="bar" id="dice_stat_bar_12">0</div>
-    </div>
+        let flag = action[3]
+        if (flag == "DICE_DATA") {
+            let d1 = action[1]
+            let d2 = action[2]
+            DICE_STATS[d1 + d2] += 1;
+            DICE_STATS["max"] = Math.max(...Object.values(DICE_STATS))
+        }
+        else {
+            //console.log(actions[j])
 
 
-</div>
-    
-   `
+            let user = action[0]; // Who to modify resources to
+            let amount = action[1]; // number of resource to add 
+            let resource = action[2]; //
+            if (user) {
+                if (!(user in USERS_DATA)) { USERS_DATA[user] = { [ORE]: 0, [WOOL]: 0, [BRICK]: 0, [GRAIN]: 0, [LUMBER]: 0, [UNKNOWN_CARD]: 0 }; }
+            }
+
+
+            USERS_DATA[user][resource] += amount;
+            if (flag == "MONOPOLY") {
+                for (let player in USERS_DATA) {
+                    if (player != user) { USERS_DATA[player][resource] = 0; }
+                }
+            }
+
+        }
+    }
+}
+
+function log_action(action) {
+    // Log actions with format
+    let user = action[0];
+    let amount = action[1];
+    let resource = action[2];
+    let flag = action[3];
+
+    if (flag == "DICE_DATA") {
+        console.log(`%c Turn ${TURNS}): ${user} rolled ${action[1] + action[2]}`, 'background: #222; color: #bada55')
+    }
+    else {
+        let color = USER_COLORMAP[user]
+        if (user == MY_USERNAME) {
+            // color = "white"
+        }
+        console.log(`%c ${user}%c : ${(amount == 1) ? "+1" : amount} ${resource} (${flag})`, `color: ${color}; background: rgba(255, 255, 255, 0.6)`, '')
+    }
+
+
+}
+
+// ------------------------  RENDERING FUNCTIONS ---------------------------------- //
+
+function updateChart() {
+
+    // Update Resources
+    Object.keys(USERS_DATA).forEach((user) => {
+
+        let user_div = document.getElementById("userdiv_" + user)
+        if (!user_div && (user != MY_USERNAME || INCLUDE_SELF)) {
+            addUserBlock(user)
+        }
+        if (user != MY_USERNAME || INCLUDE_SELF){
+
+            for (let resource of RESOURCES_LIST) {
+                let user_res_div = document.getElementById(user + "_" + resource)
+                let n = USERS_DATA[user][resource];
+                user_res_div.innerText = (n == 0) ? "" : `    ${n}`
+            }
+        }
+            
+    });
+
+    // Update cards
+    document.getElementById("card_count_knight").innerText = `${USED_DEV_CARDS[KNIGHT]}/${MAX_DEV_CARDS[KNIGHT]}`;
+    document.getElementById("card_count_monopoly").innerText = `${USED_DEV_CARDS[MONOPOLY]}/${MAX_DEV_CARDS[MONOPOLY]}`;
+    document.getElementById("card_count_yearofplenty").innerText = `${USED_DEV_CARDS[PLENTY]}/${MAX_DEV_CARDS[PLENTY]}`;
+    document.getElementById("card_count_roadbuilding").innerText = `${USED_DEV_CARDS[ROAD2]}/${MAX_DEV_CARDS[ROAD2]}`;
+    document.getElementById("card_count_all").innerText = 25 - USED_DEV_CARDS["BOUGHT"];
+
+    // Update dice stats
+    for (i = 2; i < 13; i++) {
+        let e = document.getElementById("dice_stat_bar_" + i)
+        e.innerText = DICE_STATS[i];
+        e.style.width = DICE_STATS[i] * 80 / DICE_STATS["max"] + "px"
+    }
+}
+
+function addInitialHtml(){ 
+    document.body.insertAdjacentHTML('afterbegin', `
+        <div class="main-extention-container">
+            <div class="data-wrapper user" id="user-data-wrapper"></div>
+            <div class="data-wrapper stats" id="stats-data-wrapper">
+                <div class="data-div stats-div">
+
+                    <div class="user-div-hr"> Used cards</div>
+                    <div class="resource-div">
+                        <img class="r_div_img" src="/dist/images/card_knight.svg" alt="">
+                        <span id="card_count_knight" class="r_div_span">0/14</span>
+                    </div>
+                    <div class="resource-div">
+                        <img class="r_div_img" src="/dist/images/card_monopoly.svg" alt="">
+                        <span id="card_count_monopoly" class="r_div_span">0/2</span>
+                    </div>
+                    <div class="resource-div">
+                        <img class="r_div_img" src="/dist/images/card_yearofplenty.svg" alt="">
+                        <span id="card_count_yearofplenty" class="r_div_span">0/2</span>
+                    </div>
+                    <div class="resource-div">
+                        <img class="r_div_img" src="/dist/images/card_roadbuilding.svg" alt="">
+                        <span id="card_count_roadbuilding" class="r_div_span">0/2</span>
+                    </div>
+                    
+                    <div class="user-div-hr"> Available</div>
+                    <div class="resource-div">
+                        <img class="r_div_img" src="/dist/images/card_devcardback.svg" alt="">
+                        <span id="card_count_all" class="r_div_span">25</span>
+                    </div>
+        
+                    <div class="user-div-hr"> Dice stats</div>
+                    <div class="resource-div">
+                        <span class="d_div_span">2</span>
+                        <div class="bar" id="dice_stat_bar_2">0</div>
+                    </div>
+                
+                    <div class="resource-div">
+                        <span class="d_div_span">3</span>
+                        <div class="bar" id="dice_stat_bar_3">0</div>
+                    </div>
+                
+                    <div class="resource-div">
+                        <span class="d_div_span">4</span>
+                        <div class="bar" id="dice_stat_bar_4">0</div>
+                    </div>
+                
+                    <div class="resource-div">
+                        <span class="d_div_span">5</span>
+                        <div class="bar" id="dice_stat_bar_5">0</div>
+                    </div>
+                
+                    <div class="resource-div">
+                        <span class="d_div_span">6</span>
+                        <div class="bar" id="dice_stat_bar_6">0</div>
+                    </div>
+                
+                    <div class="resource-div">
+                        <span class="d_div_span">7</span>
+                        <div class="bar" id="dice_stat_bar_7">0</div>
+                    </div>
+                
+                    <div class="resource-div">
+                        <span class="d_div_span">8</span>
+                        <div class="bar" id="dice_stat_bar_8">0</div>
+                    </div>
+                
+                    <div class="resource-div">
+                        <span class="d_div_span">9</span>
+                        <div class="bar" id="dice_stat_bar_9">0</div>
+                    </div>
+                
+                    <div class="resource-div">
+                        <span class="d_div_span">10</span>
+                        <div class="bar" id="dice_stat_bar_10">0</div>
+                    </div>
+                
+                    <div class="resource-div">
+                        <span class="d_div_span">11</span>
+                        <div class="bar" id="dice_stat_bar_11">0</div>
+                    </div>
+                
+                    <div class="resource-div">
+                        <span class="d_div_span">12</span>
+                        <div class="bar" id="dice_stat_bar_12">0</div>
+                    </div>
+                </div>
+            </div>
+        </div>`);
 }
 
 function addUserBlock(user) {
-
-    let userdiv = document.createElement("div");
-    userdiv.classList.add("data-div")
-    userdiv.classList.add("user-div")
-    userdiv.id = "userdiv_" + user
-
-    let user_hr = document.createElement("div");
-    user_hr.innerText = (user == MY_USERNAME) ? "(You)" : user;
-    user_hr.classList.add("user-div-hr")
-    user_hr.style.color = USER_COLORMAP[user];
-    userdiv.appendChild(user_hr);
-
-    for (let resource of RESOURCES_LIST) {
-
-        let resource_div = document.createElement("div");
-        resource_div.classList.add("resource-div")
-
-        let r_img = document.createElement("img");
-        r_img.classList.add("r_div_img")
-        r_img.setAttribute("src", CARD_ICON[resource]);
-
-        let r_span = document.createElement("span");
-        r_span.classList.add("r_div_span")
-        r_span.id = user + "_" + resource
-
-        resource_div.appendChild(r_img);
-        resource_div.appendChild(r_span);
-        userdiv.appendChild(resource_div);
-
-    }
-
-    document.getElementById("user-data-wrapper").append(userdiv);
+    document.getElementById("user-data-wrapper").innerHTML += `
+        <div class="data-div user-div" id="userdiv_${user}">
+            <div class="user-div-hr" style="color:${USER_COLORMAP[user]};">${user}</div>
+            <div class="resource-div">
+                <img class="r_div_img" src="/dist/images/card_lumber.svg">
+                <span class="r_div_span" id="${user}_lumber"> </span>
+            </div>
+            <div class="resource-div">
+                <img class="r_div_img" src="/dist/images/card_brick.svg">
+                <span class="r_div_span" id="${user}_brick"></span>
+            </div>
+            <div class="resource-div">
+                <img class="r_div_img" src="/dist/images/card_wool.svg">
+                <span class="r_div_span" id="${user}_wool"></span>
+            </div>
+            <div class="resource-div">
+                <img class="r_div_img" src="/dist/images/card_grain.svg">
+                <span class="r_div_span" id="${user}_grain"></span>
+            </div>
+            <div class="resource-div">
+                <img class="r_div_img" src="/dist/images/card_ore.svg">
+                <span class="r_div_span" id="${user}_ore"></span>
+            </div>
+        </div>`
 }
+
+// -------------------------------------------------------------------------------- //

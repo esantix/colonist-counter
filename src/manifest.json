@@ -1,17 +1,17 @@
 {
   "manifest_version": 3,
-  "name": "Colonist resource counter",
-  "description": "Keep count of player resources by log inspection",
+  "name": "Colonist log parser",
+  "description": "Display parsed log information.",
   "author":"santiago93echevarria@gmail.com",
   "permissions": [
     "cookies",
     "storage",
     "webRequest"
   ],
-  "version": "1.4.0",
+  "version": "2.0",
   "content_scripts": [{
       "matches": ["https://colonist.io/*"],
-      "js": ["count.js"],
+      "js": ["main.js"],
       "css": ["style.css"]
     
     }],
@@ -20,7 +20,11 @@
       "32": "icon.png",
       "48": "icon.png",
       "128": "icon.png"
-    }
+    },
+    "web_accessible_resources": [
+      {"resources": ["templates/*"],
+        "matches": ["https://colonist.io/*"]}
+    ]
 
 } 
 
