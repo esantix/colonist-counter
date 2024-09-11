@@ -3,22 +3,24 @@
   "name": "Colonist resource counter",
   "description": "Keep count of player resources by log inspection",
   "author":"santiago93echevarria@gmail.com",
-    "permissions": [
-      "cookies",
-      "storage",
-      "webRequest"
-    ],
-    "version": "1.4.0",
-    "content_scripts": [{
-        "matches": ["https://colonist.io/*"],
-        "js": ["count.js"],
-        "css": ["style.css"]
-      }],
-    "icons": {
-        "16": "icon.png",
-        "32": "icon.png",
-        "48": "icon.png",
-        "128": "icon.png"
-      }
+  "permissions": [
+    "cookies",
+    "storage",
+    "webRequest"
+  ],
+  "version": "1.4.0",
+  "content_scripts": [{
+      "matches": ["https://colonist.io/*"],
+      "js": ["count.js"],
+      "css": ["style.css"]
+    
+    }],
+  "icons": {
+      "16": "icon.png",
+      "32": "icon.png",
+      "48": "icon.png",
+      "128": "icon.png"
+    }
+
 } 
 
