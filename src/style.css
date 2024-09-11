@@ -37,10 +37,6 @@
    background-image: linear-gradient(to bottom,#fcfaf5,#bb9fce);
 }
 
-#userdiv_self{
-   background-image: linear-gradient(to bottom,#edf2ff,#b0ccdd);
-}
-
 .user-div-hr-self{
    font-weight: 700;
    margin-bottom: 3px;
@@ -79,6 +75,7 @@
 .d_div_span{
    margin-left: 2px;
    font-size: 11px;
+   width: 20px;
 }
 
 .r_div_img{
