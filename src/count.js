@@ -48,7 +48,7 @@ const CARD_ICON = {
 };
 
 // ----------------------------   PARAMETERS ------------------------------------ //
-let INCLUDE_SELF = false;
+let INCLUDE_SELF = true;
 
 // ----------------------------  AUX VARIABLES ------------------------------------ //
 
@@ -66,17 +66,17 @@ let GAME_ENDED = false;
 
 // Statistics
 let DICE_STATS = { 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0, max: 0 }
-let USED_DEV_CARDS = { [KNIGHT]: 0, [MONOPOLY]: 0, [PLENTY]: 0, [ROAD2]: 0, [VP]: 0, "BOUGHT": 0}
-let MAX_DEV_CARDS = { [KNIGHT]: 14, [MONOPOLY]: 2, [PLENTY]: 2, [ROAD2]: 2, [VP]: 5}
+let USED_DEV_CARDS = { [KNIGHT]: 0, [MONOPOLY]: 0, [PLENTY]: 0, [ROAD2]: 0, [VP]: 0, "BOUGHT": 0 }
+let MAX_DEV_CARDS = { [KNIGHT]: 14, [MONOPOLY]: 2, [PLENTY]: 2, [ROAD2]: 2, [VP]: 5 }
 
 
 // --------------------  INITIAL CORE ELEMENTS --------------------- //
 
 const TOPBAR = document.createElement("div"); // Create top bar
-TOPBAR.classList.add("top-bar");
+TOPBAR.classList.add("main-extention-container");
 
 const USER_DATA_WRAPPER = document.createElement("div"); // Div for data display
-USER_DATA_WRAPPER.classList.add("user-div-wp")
+USER_DATA_WRAPPER.classList.add("data-wrapper")
 
 TOPBAR.appendChild(USER_DATA_WRAPPER);
 document.body.insertBefore(TOPBAR, document.body.firstChild);
@@ -91,17 +91,16 @@ initOnLoad();
 // --------------------------  FUNCTIONS  ---------------------------------- //
 
 
-function reset(){
+function reset() {
     USER_COLORMAP = {};
     USERS_DATA = {};
-    MY_USERNAME = "";
     PREVIOUS_IS_MONOPOLY = false;
     IS_OBSERVER_ACTIVE = false
     IS_DATA_ACTIVE = false;
     TURNS = 0;
     GAME_ENDED = false;
     DICE_STATS = { 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0, max: 0 }
-    USED_DEV_CARDS = { [KNIGHT]: 0, [MONOPOLY]: 0, [PLENTY]: 0, [ROAD2]: 0, [VP]: 0, "BOUGHT": 0}
+    USED_DEV_CARDS = { [KNIGHT]: 0, [MONOPOLY]: 0, [PLENTY]: 0, [ROAD2]: 0, [VP]: 0, "BOUGHT": 0 }
 }
 
 function log_action(action) {
@@ -147,8 +146,8 @@ function initOnLoad() {
     LOG_LOADED_OBSERVER.observe(document.body, { childList: true, subtree: true });
 }
 
-function activate(){
-    console.log("Activated")
+function activate() {
+
     if (!IS_OBSERVER_ACTIVE) {
 
         MY_USERNAME = document.getElementById('header_profile_username').innerText;
@@ -159,10 +158,9 @@ function activate(){
         document.getElementById("remove_ad_in_game_right").style.display = "none";
         document.getElementById("remove_ad_in_game_left").style.display = "none";
 
-        
-
         startLogObserver();
-        console.log(`%c Colonist Resource counter is active`, 'background: #222; color: #bada55')
+        console.log(`%c Colonist Resource counter activated`, 'background: #222; color: #bada55')
+        console.log("You are:" + MY_USERNAME)
     }
 }
 
@@ -174,31 +172,35 @@ function startLogObserver() {
         for (let mutation of mutationsList) {
             if (mutation.type === "childList") {
                 mutation.addedNodes.forEach(node => {
-                    if (GAME_ENDED){
+
+                    if (GAME_ENDED) {
                         LOG_OBSERVER.disconnect()
                         IS_OBSERVER_ACTIVE = false;
-                        reset();
-                    }else{
-                        if (!IS_DATA_ACTIVE) {
-                            buildChart();
-                            IS_DATA_ACTIVE = true;
-                        }
-                        let operations = parseLogMsg(node)
-                        if (operations === false){
+                        console.log(`%c Colonist Resource counter deactivated`, 'background: #222; color: #bada55')
+
+                    }
+                    else if (node.classList && node.classList[0] == "message-post") {
+
+                        // If last message
+                        if (node.classList[1] == "victory-text") {
+                            GAME_ENDED = true;
                             return 0
                         }
+
+                        let operations = parseLogMsg(node)
                         if (operations.length > 0) {
                             execute_ops(operations)
                         }
                     }
                 })
-    
+
             }
         }
     });
 
     LOG_OBSERVER.observe(targetNode, { attributes: true, childList: true, subtree: true });
     IS_OBSERVER_ACTIVE = true;
+    reset()
 }
 
 function execute_ops(operations) {
@@ -243,18 +245,18 @@ function addUserChart(user) {
     let user_data = USERS_DATA[user];
     let userdiv = document.createElement("div");
     let user_hr = document.createElement("div");
+    userdiv.classList.add("data-div")
     userdiv.classList.add("user-div")
-    
+
     let id = "userdiv_" + user
-    let hr_class  ="user-div-hr"
+    let hr_class = "user-div-hr"
     let hdr = user
 
-    if (user == MY_USERNAME){
+    if (user == MY_USERNAME) {
         id = "userdiv_self"
         hdr = "(You)"
 
-}
-
+    }
     userdiv.id = id
 
     user_hr.innerText = hdr;
@@ -289,6 +291,25 @@ function addUserChart(user) {
     USER_DATA_WRAPPER.append(userdiv);
 }
 
+function updateChart(){
+    Object.keys(USERS_DATA).forEach((user) => {
+
+        let user_div = document.getElementById("userdiv_" + user)
+        if (!user_div && (user != MY_USERNAME || INCLUDE_SELF) ){
+            addUserChart(user)
+        }
+        for (let resource of RESOURCES_LIST) {
+            let user_res_div = document.getElementById(user + "_" + resource)
+            let n = USERS_DATA[user][resource];
+            user_res_div.innerText = (n == 0) ? "" : `    ${n}`
+    
+        }
+
+
+    });
+
+}
+
 function buildChart() {
     // Build graphical display of resources
     USER_DATA_WRAPPER.innerHTML = ""; // Needs to be cleared each time
@@ -306,7 +327,8 @@ function buildChart() {
 
     // CREATE STATS
     let stats_div = document.createElement("div");
-    stats_div.classList.add("user-div")
+    stats_div.classList.add("data-div")
+    stats_div.classList.add("stats-div")
 
 
     // DEV CARDS STATS
@@ -383,16 +405,16 @@ function buildChart() {
 
     }
     let number_div = document.createElement("div");
-        number_div.classList.add("resource-div")
+    number_div.classList.add("resource-div")
 
-        let turns_span = document.createElement("div");
-        turns_span.classList.add("d_div_span")
-        turns_span.style.width = "100px"
-        turns_span.innerText = `Turns: ${TURNS}`
+    let turns_span = document.createElement("div");
+    turns_span.classList.add("d_div_span")
+    turns_span.style.width = "100px"
+    turns_span.innerText = `Turns: ${TURNS}`
 
 
-        number_div.appendChild(turns_span);
-        stats_div.appendChild(number_div);
+    number_div.appendChild(turns_span);
+    stats_div.appendChild(number_div);
 
 
 
@@ -407,22 +429,13 @@ function buildChart() {
 function parseLogMsg(logHtmlElement) {
     // Parses html message into a list of operations
     // Return list of [user, amount_to_add, resource, flag]
-    var operations = []; 
-    try{
-
-        let sec = logHtmlElement.classList[1]
-        if(sec == "victory-text"){
-            GAME_ENDED = true;  
-            return false
-    }
-    } 
-    catch(e){}
+    var operations = [];
     try {
-        
+
         let msgCtn = logHtmlElement.childNodes[1].childNodes;
         var user = logHtmlElement.children[1].children[0].innerText.trim(); // no funciona para You Stole
-        
-       
+
+
 
         USER_COLORMAP[user] = logHtmlElement.children[1].children[0].style.color // Solo al existir log puedo scrappear color de usuario
         // Si el mensaje anterior es que suó monopoly
@@ -431,7 +444,7 @@ function parseLogMsg(logHtmlElement) {
             let amount = parseInt(msgCtn[1].textContent.replace("stole", "").trim());
             operations.push([user, amount, resource, "MONOPOLY"]);
             PREVIOUS_IS_MONOPOLY = false;
-        }             
+        }
         else if (logHtmlElement.innerText.trim().startsWith("You stole")) {
             let stolen = msgCtn[3].innerText;
             let resource = msgCtn[1].alt;

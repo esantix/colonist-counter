@@ -1,9 +1,27 @@
-.user-div-wp{
-   padding-top: 10px;
-   margin-left: 10px;
+.main-extention-container{
+   height: 100%;
+   display: flex;
+   flex-direction: column;
+   position:absolute;
+   overflow-y: scroll;
+   -ms-overflow-style: none;  /* IE and Edge */
+   scrollbar-width: none;  /* Firefox */
+
 }
 
-.user-div {
+.main-extention-container::-webkit-scrollbar {
+   display: none; /* Hide scrollbar for WebKit browsers */
+}
+
+
+.data-wrapper{
+   padding-top: 10px;
+   margin-left: 10px;
+   margin-right: 10px;
+   margin-bottom: 50px;
+}
+
+.data-div {
    padding: 5px;
    background-image: linear-gradient(to bottom,#fcfaf5,#e2d7c4);
    color: black;
@@ -13,7 +31,10 @@
    display: flex;
    flex-direction: column;
    border-radius: 5px;
-   
+}
+
+.data-div.stats-div{
+   background-image: linear-gradient(to bottom,#fcfaf5,#bb9fce);
 }
 
 #userdiv_self{
@@ -33,12 +54,7 @@
 
 }
 
-.top-bar{
-   height: 100%;
-   display: flex;
-   flex-direction: column;
-   position:absolute
-}
+
 
 .bar{
    background-color: rgb(30, 82, 151);
