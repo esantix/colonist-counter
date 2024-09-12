@@ -51,6 +51,7 @@ let INCLUDE_SELF = false;
 // ----------------------------  AUX VARIABLES ------------------------------------ //
 
 let USER_COLORMAP = {};
+let USER_ICON = {};
 let USERS_DATA = {}; // User resources map
 let MY_USERNAME = "";
 
@@ -110,6 +111,8 @@ function init() {
         startLogObserver();
         console.log(`%c Colonist Resource counter activated`, 'background: #222; color: #bada55')
         console.log("You are:" + MY_USERNAME)
+        
+        onWin()
     }
 }
 
@@ -153,6 +156,11 @@ function startLogObserver() {
     IS_OBSERVER_ACTIVE = true;
 }
 
+
+function onWin(){
+    document.getElementById("game-chat-input").value = "Good game!"
+}
+
 // ------------------------  OPERATIONAL FUNCTIONS  ---------------------------------- //
 
 function parseLogMsg(logHtmlElement) {
@@ -167,6 +175,8 @@ function parseLogMsg(logHtmlElement) {
 
 
         USER_COLORMAP[user] = logHtmlElement.children[1].children[0].style.color // Solo al existir log puedo scrappear color de usuario
+        USER_ICON[user]= logHtmlElement.children[0].src
+
         // Si el mensaje anterior es que suó monopoly
         if (PREVIOUS_IS_MONOPOLY) {
             let resource = msgCtn[2].alt;
@@ -404,7 +414,7 @@ function updateChart() {
             for (let resource of RESOURCES_LIST) {
                 let user_res_div = document.getElementById(user + "_" + resource)
                 let n = USERS_DATA[user][resource];
-                user_res_div.innerText = (n == 0) ? "" : `    ${n}`
+                user_res_div.innerText = (n == 0) ? " " : n
             }
         }
             
@@ -438,7 +448,7 @@ function addInitialHtml(){
             <div class="data-wrapper stats" id="stats-data-wrapper">
                 <div class="data-div stats-div">
 
-                    <div class="user-div-hr"> Statistics</div>
+                    <div class="user-div-hr"> Game data</div>
                     <div class="data-div-hr"> Played cards</div>
                     <div class="d_div">
                         <img class="d_div_img" src="/dist/images/card_knight.svg" alt="">
@@ -526,7 +536,12 @@ function addInitialHtml(){
 function addUserBlock(user) {
     document.getElementById("user-data-wrapper").innerHTML += `
         <div class="data-div user-div" id="userdiv_${user}">
-            <div class="user-div-hr" style="color:${USER_COLORMAP[user]};">${user}</div>
+
+        
+            <div class="user-div-title">
+                <img class="user-div-title-img" src=${ USER_ICON[user]} alt="">
+                <div class="user-div-hr" style="color:${USER_COLORMAP[user]};">${user}</div>
+            </div>
             <div class="r_div_wp">
           
                 <div class="r_div">

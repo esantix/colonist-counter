@@ -3,11 +3,7 @@
   "name": "Colonist log parser",
   "description": "Display parsed log information.",
   "author":"santiago93echevarria@gmail.com",
-  "permissions": [
-    "cookies",
-    "storage",
-    "webRequest"
-  ],
+  "permissions": [],
   "version": "2.0",
   "content_scripts": [{
       "matches": ["https://colonist.io/*"],
