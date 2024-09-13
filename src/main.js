@@ -56,7 +56,7 @@ const COLOR_CODE = {
 
 // ----------------------------   PARAMETERS ------------------------------------ //
 let SHOW_SELF = true;
-let SHOW_INFRA = false;
+let SHOW_INFRA = true;
 let SHOW_STATS = true;
 
 // ----------------------------  AUX VARIABLES ------------------------------------ //
@@ -171,8 +171,8 @@ function startLogObserver() {
                         let operations = parseLogMsg(node)
                         if (operations.length > 0) {
                             execute_ops(operations)
-                            updateChart()
                         }
+                        updateChart()
 
                     }
                 })
@@ -473,23 +473,37 @@ function updateChart() {
 
             for (let resource of RESOURCES_LIST) {
                 let user_res_div = document.getElementById(user + "_" + resource)
-                let n = USERS_DATA[user][resource];
-                user_res_div.innerText = (n == 0) ? " " : n
+                let odl_value = parseInt(user_res_div.innerText)
+                let n = parseInt(USERS_DATA[user][resource]);
+                user_res_div.innerText = n;
+                if( n==0){
+                    document.getElementById(user + "_" + resource).style.visibility = "hidden"
+                }else{
+                    document.getElementById(user + "_" + resource).style.visibility = "visible"
+
+                }
+
+                if( n != odl_value){
+                    user_res_div.animate(
+                        [
+                          { transform: 'scale(1)'},
+                          { transform: 'scale(2)'},
+                          { transform: 'scale(2)'},
+                          { transform: 'scale(2)'},
+                          { transform: 'scale(1)'}
+                        ], {
+                          duration: 1000,
+                          iterations: 1
+                        }
+                      );
+                }
             }
 
             if (SHOW_INFRA){
                 document.getElementById(user + "_" + SETTLEMENT).innerText = MAX_INFRA[SETTLEMENT] - USERS_DATA[user][SETTLEMENT]
-                if(USERS_DATA[user][SETTLEMENT] == MAX_INFRA[SETTLEMENT]){ color = "red"}else{ color = "black"}
-                document.getElementById(user + "_" + SETTLEMENT).style.color = color;
-                
                 document.getElementById(user + "_road").innerText = MAX_INFRA[ROAD] -USERS_DATA[user][ROAD]
-                if(USERS_DATA[user][ROAD] == MAX_INFRA[ROAD]){color = "red"}else{color = "black" }
-                document.getElementById(user + "_road").style.color = color;
-                
-                
                 document.getElementById(user + "_city").innerText = MAX_INFRA[CITY] - USERS_DATA[user][CITY]
-                if(USERS_DATA[user][CITY] == MAX_INFRA[CITY]){ color = "red"}else{ color = "black"}
-                document.getElementById(user + "_city").style.color = color;
+     
             }
         }
             
@@ -539,7 +553,7 @@ function addInitialHtml(){
     let htmlString = `<div class="main-extention-container">`
     htmlString += `
         <div class="config-wp">
-            <button class="conf-button binactive" id="inf">BUILDiNGS</button>
+            <button class="conf-button bactive" id="inf">BUILDiNGS</button>
             <button class="conf-button bactive" id="self">SELF DATA</button>
             <button class="conf-button bactive" id="stats">STATISTICS</button>
         </div>`
@@ -554,25 +568,25 @@ function addInitialHtml(){
                 <div class="data-div-hr"> Played cards</div>
                 <div class="d_div">
                     <img class="d_div_img" src="/dist/images/card_knight.svg" alt="">
-                    <span id="card_count_knight" class="r_div_span">0/14</span>
+                    <span id="card_count_knight" class="card_div_span">0/14</span>
                 </div>
                 <div class="d_div">
                     <img class="d_div_img" src="/dist/images/card_monopoly.svg" alt="">
-                    <span id="card_count_monopoly" class="r_div_span">0/2</span>
+                    <span id="card_count_monopoly" class="card_div_span">0/2</span>
                 </div>
                 <div class="d_div">
                     <img class="d_div_img" src="/dist/images/card_yearofplenty.svg" alt="">
-                    <span id="card_count_yearofplenty" class="r_div_span">0/2</span>
+                    <span id="card_count_yearofplenty" class="card_div_span">0/2</span>
                 </div>
                 <div class="d_div">
                     <img class="d_div_img" src="/dist/images/card_roadbuilding.svg" alt="">
-                    <span id="card_count_roadbuilding" class="r_div_span">0/2</span>
+                    <span id="card_count_roadbuilding" class="card_div_span">0/2</span>
                 </div>
                 
                 <div class="data-div-hr"> Cards in bank</div>
                 <div class="d_div">
                     <img class="d_div_img" src="/dist/images/card_devcardback.svg" alt="">
-                    <span id="card_count_all" class="r_div_span">25</span>
+                    <span id="card_count_all" class="card_div_span">25</span>
                 </div>
     
                 <div class="data-div-hr"> Dice stats</div>
@@ -632,7 +646,14 @@ function addInitialHtml(){
                 </div>
                 </div>
                 </div>
-                 <div class="data-wrapper user" id="user-data-wrapper">
+            <div class="data-wrapper user" id="user-data-wrapper">
+
+
+
+
+
+
+
             </div>
             
         </div>`
@@ -653,6 +674,16 @@ function addInitialHtml(){
         document.querySelectorAll('.infra').forEach(element => {
             element.style.display = display;
         });
+
+        document.querySelectorAll('.divider').forEach(element => {
+            element.style.display = display;
+        });
+
+
+
+        divider
+
+
         updateChart() 
     };
 
@@ -720,27 +751,28 @@ function addUserBlock(user) {
                             <span class="r_div_span_build" id="${user}_road"></span>
                         </div>
                  </div>
+         <span class="divider"><hr class="line"></span>
             <div class="r_div_wp">
           
                 <div class="r_div">
+                <span class="r_div_span anim" id="${user}_lumber">0</span>
                     <img class="r_div_img" src="/dist/images/card_lumber.svg">
-                    <span class="r_div_span" id="${user}_lumber"> </span>
                 </div>
                 <div class="r_div">
+                <span class="r_div_span anim" id="${user}_brick">0</span>
                     <img class="r_div_img" src="/dist/images/card_brick.svg">
-                    <span class="r_div_span" id="${user}_brick"></span>
                 </div>
                 <div class="r_div">
+                <span class="r_div_span anim" id="${user}_wool">0</span>
                     <img class="r_div_img" src="/dist/images/card_wool.svg">
-                    <span class="r_div_span" id="${user}_wool"></span>
                 </div>
                 <div class="r_div">
+                <span class="r_div_span anim" id="${user}_grain">0</span>
                     <img class="r_div_img" src="/dist/images/card_grain.svg">
-                    <span class="r_div_span" id="${user}_grain"></span>
                 </div>
                 <div class="r_div">
+                <span class="r_div_span anim" id="${user}_ore">0</span>
                     <img class="r_div_img" src="/dist/images/card_ore.svg">
-                    <span class="r_div_span" id="${user}_ore"></span>
                 </div>
             </div>
       

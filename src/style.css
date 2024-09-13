@@ -81,6 +81,7 @@
 .user-div {
    align-content: center;
    display: flex;
+   min-width: 170px;
 }
 
 .me{
@@ -103,20 +104,21 @@
 .user-div-hr {
    font-weight: 700;
    margin-bottom: 3px;
+   margin-left: 10px;
    text-align: center;
 
 }
 
 
 .r_div_wp {
-   margin-top: 8px;
+   margin:auto;
    display: flex;
    flex-direction: row;
 }
 
 .r_div_wp.infra {
+   display: flex;
    margin-top: 8px;
-   display: none;
    flex-direction: row;
 }
 
@@ -158,9 +160,51 @@
    width: 22px;
 }
 
-.r_div_span {
-   margin-left: 3px;
+.line{
+
+   border-top: 1px solid rgb(0, 0, 0);
 }
+.r_div_span {
+   /* color: #F9F9DE;
+   background-color: #2B72B2; */
+
+   color: #2B72B2;;
+    font-weight: 700;
+    font-size: 13px;
+    padding: 1px 2px;
+    margin: 1px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+.r_div_span_build {
+   /* color: #F9F9DE;
+   background-color: #2B72B2; */
+
+   color: #2B72B2;
+    font-weight: 700;
+    font-size: 14px;
+    padding: 2px 4px;
+    margin: 1px;
+    border-radius: 5px;
+    text-align: center;
+}
+
+
+.card_div_span {
+   /* color: #F9F9DE;
+   background-color: #2B72B2; */
+
+color: #2B72B2;
+
+    font-weight: 700;
+    padding: 3px 4px;
+    margin: 3px;
+    border-radius: 2px;
+    text-align: center;
+}
+
+
 
 .data-div.stats-div {
    background-image: linear-gradient(to bottom, #fcfaf5, #9fb3ce);
@@ -185,7 +229,7 @@
 }
 
 .d_div_img {
-   width: 22px;
+   width: 25px;
 }
 
 .d_div_span {
@@ -202,13 +246,16 @@
 }
 
 .d_bar {
-   background-color: rgb(30, 82, 151);
-   color: white;
+   background-color: #2B72B2;
+   color: #F9F9DE;
    text-align: right;
    padding-right: 5px;
    padding-left: 5px;
    font-size: 11px;
    display: flex;
+   padding: 1px 5px;
+   font-weight: 700;
    border-top-right-radius: 4px;
    border-bottom-right-radius: 4px;
 }
+
