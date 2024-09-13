@@ -1,5 +1,5 @@
 # Colonist.io log parser
-Chrome extention for Colonist.io game.
+Chrome extention for [Colonist.io](https://colonist.io/) game.
 
 ## Description
 Parses public log and displays data on charts. Also hides ads. 
