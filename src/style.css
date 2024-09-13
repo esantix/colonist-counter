@@ -13,6 +13,33 @@
 }
 
 
+.config-wp {
+   display: flex;
+   flex-direction: row;
+   padding-top: 5px;
+   margin-left: 10px;
+   margin-right: 10px;
+}
+
+.conf-button{
+   font-size: 10px;
+   height: 20px;
+   text-align: center;
+   cursor: pointer;
+   margin-left: 2px;
+   border-radius: 4px;
+   border: 0px;
+}
+
+.bactive{
+   color: black;
+}
+
+.binactive{
+   color: grey;
+}
+
+
 .data-wrapper {
    padding-top: 5px;
    margin-left: 10px;
@@ -37,6 +64,11 @@
    align-content: center;
    display: flex;
    margin-top: 10px;
+}
+
+.me{
+   background-image: linear-gradient(to bottom, #fcfaf5, #bad3e4);
+
 }
 
 .user-div-title {
@@ -65,6 +97,12 @@
    flex-direction: row;
 }
 
+.r_div_wp.infra {
+   margin-top: 8px;
+   display: none;
+   flex-direction: row;
+}
+
 .r_div {
    display: flex;
    flex-direction: column;
@@ -74,11 +112,37 @@
    margin-bottom: 2px;
 }
 
+
+
+
+.r_div_build {
+   display: flex;
+   flex-direction: row;
+   color: black;
+   margin-left: 4px;
+   margin-bottom: 2px;
+}
+
 .r_div_img {
    width: 18px;
 }
 
 
+.infra {
+   display: none;
+}
+
+.r_div_img_build {
+   margin-left: 2px;
+   margin-right: 2px;
+   width: 22px;
+}
+
+.r_div_img_build.road {
+   margin-left: 0px;
+   margin-right: -2px;
+   width: 22px;
+}
 
 .r_div_span {
    margin-left: 3px;

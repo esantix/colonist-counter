@@ -45,8 +45,19 @@ const CARD_ICON = {
     [VP]: "/dist/images/card_vp.svg"
 };
 
+
+const COLOR_CODE = {
+    "rgb(226, 113, 116)":"red",
+    "rgb(34, 54, 151)": "blue",
+    "rgb(224, 151, 66)": "orange",
+    "rgb(62, 62, 62)": "black",
+    "rgb(98, 185, 93)" : "green"
+}
+
 // ----------------------------   PARAMETERS ------------------------------------ //
-let INCLUDE_SELF = false;
+let SHOW_SELF = true;
+let SHOW_INFRA = false;
+let SHOW_STATS = true;
 
 // ----------------------------  AUX VARIABLES ------------------------------------ //
 
@@ -66,10 +77,23 @@ let GAME_ENDED = false;
 let DICE_STATS = { 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0, max: 0 }
 let USED_DEV_CARDS = { [KNIGHT]: 0, [MONOPOLY]: 0, [PLENTY]: 0, [ROAD2]: 0, [VP]: 0, "BOUGHT": 0 }
 let MAX_DEV_CARDS = { [KNIGHT]: 14, [MONOPOLY]: 2, [PLENTY]: 2, [ROAD2]: 2, [VP]: 5 }
+let MAX_INFRA = { [ROAD]: 15, [CITY]: 4, [SETTLEMENT]: 5}
 
 // ------------------------   INITIALIZATION  ---------------------------------- //
 
 initOnLoad();
+
+// function enemyMsg(){
+//     let msg = ""
+//     Object.keys(USERS_DATA).forEach((user) => {
+
+//         if (user != MY_USERNAME ){
+//             msg += `You have ${"lumber".repeat(USERS_DATA[user]["lumber"])}  ${"brick".repeat(USERS_DATA[user]["brick"])}  ${"wool".repeat(USERS_DATA[user]["wool"])}  ${"grain".repeat(USERS_DATA[user]["grain"])}  ${"ore".repeat(USERS_DATA[user]["ore"])}  `
+//         }
+//     })
+//     return msg
+// }
+
 
 // ------------------------   INITIALIZATION FUNCTIONS  ---------------------------------- //
 
@@ -158,10 +182,11 @@ function startLogObserver() {
 
 
 function onWin(){
-    document.getElementById("game-chat-input").value = "Good game!"
+   // document.getElementById("game-chat-input").value = enemyMsg()
 }
 
 // ------------------------  OPERATIONAL FUNCTIONS  ---------------------------------- //
+
 
 function parseLogMsg(logHtmlElement) {
     // Parses html message into a list of operations
@@ -171,10 +196,25 @@ function parseLogMsg(logHtmlElement) {
 
         let msgCtn = logHtmlElement.childNodes[1].childNodes;
         var user = logHtmlElement.children[1].children[0].innerText.trim(); // no funciona para You Stole
+        let color = logHtmlElement.children[1].children[0].style.color // Solo al existir log puedo scrappear color de usuario
+        if (user) {
+            if (!(user in USERS_DATA)) { USERS_DATA[user] = {
+                                                             "color" : COLOR_CODE[color], 
+                                                              [ORE]: 0, 
+                                                              [WOOL]: 0, 
+                                                              [BRICK]: 0, 
+                                                              [GRAIN]: 0, 
+                                                              [LUMBER]: 0, 
+                                                              [ROAD]: 0, 
+                                                              [CITY]: 0, 
+                                                              [SETTLEMENT]: 0, 
+                                                              [UNKNOWN_CARD]: 0 }; }
+        }
 
 
+        USER_COLORMAP[user] = color;
 
-        USER_COLORMAP[user] = logHtmlElement.children[1].children[0].style.color // Solo al existir log puedo scrappear color de usuario
+        
         USER_ICON[user]= logHtmlElement.children[0].src
 
         // Si el mensaje anterior es que suó monopoly
@@ -291,7 +331,7 @@ function parseLogMsg(logHtmlElement) {
 
                 case "bought": {// buy dev card
                     let item = msgCtn[2].alt;
-                    if (item == "development card") {
+                    if (item == DEV_CARD) {
                         operations.push([user, -1, WOOL, "PURCHASE_CARD"]);
                         operations.push([user, -1, GRAIN, "PURCHASE_CARD"]);
                         operations.push([user, -1, ORE, "PURCHASE_CARD"]);
@@ -302,19 +342,34 @@ function parseLogMsg(logHtmlElement) {
 
                 case "built a": { // Build infra
                     let b_item = msgCtn[2].alt;
-                    if (b_item == "road") {
+                    if (b_item == ROAD) {
+                        USERS_DATA[user][ROAD] += 1
                         operations.push([user, -1, LUMBER, "PURCHASE_ROAD"]);
                         operations.push([user, -1, BRICK, "PURCHASE_ROAD"]);
                     }
-                    else if (b_item == "city") {
+                    else if (b_item == CITY) {
+                        USERS_DATA[user][CITY] += 1
+                        USERS_DATA[user][SETTLEMENT] -= 1
                         operations.push([user, -2, GRAIN, "PURCHASE_CITY"]);
                         operations.push([user, -3, ORE, "PURCHASE_CITY"]);
                     }
-                    else if (b_item == "settlement") {
+                    else if (b_item == SETTLEMENT) {
+                        USERS_DATA[user][SETTLEMENT] += 1
                         operations.push([user, -1, LUMBER, "PURCHASE_SETTLEMENT"]);
                         operations.push([user, -1, BRICK, "PURCHASE_SETTLEMENT"]);
                         operations.push([user, -1, WOOL, "PURCHASE_SETTLEMENT"]);
                         operations.push([user, -1, GRAIN, "PURCHASE_SETTLEMENT"]);
+                    }
+                    break;
+                };
+
+                case "placed a": { // Initial free
+                    let b_item = msgCtn[2].alt;
+                    if (b_item == ROAD) {
+                        USERS_DATA[user][ROAD] += 1
+                    }
+                    else if (b_item == SETTLEMENT) {
+                        USERS_DATA[user][SETTLEMENT] += 1
                     }
                     break;
                 };
@@ -361,9 +416,6 @@ function execute_ops(operations) {
             let user = action[0]; // Who to modify resources to
             let amount = action[1]; // number of resource to add 
             let resource = action[2]; //
-            if (user) {
-                if (!(user in USERS_DATA)) { USERS_DATA[user] = { [ORE]: 0, [WOOL]: 0, [BRICK]: 0, [GRAIN]: 0, [LUMBER]: 0, [UNKNOWN_CARD]: 0 }; }
-            }
 
 
             USERS_DATA[user][resource] += amount;
@@ -402,146 +454,247 @@ function log_action(action) {
 
 function updateChart() {
 
+    //document.getElementById("game-chat-input").value = enemyMsg()
+
     // Update Resources
     Object.keys(USERS_DATA).forEach((user) => {
 
         let user_div = document.getElementById("userdiv_" + user)
-        if (!user_div && (user != MY_USERNAME || INCLUDE_SELF)) {
+        if (!user_div) {
             addUserBlock(user)
         }
-        if (user != MY_USERNAME || INCLUDE_SELF){
+        if (user != MY_USERNAME || SHOW_SELF){
 
             for (let resource of RESOURCES_LIST) {
                 let user_res_div = document.getElementById(user + "_" + resource)
                 let n = USERS_DATA[user][resource];
                 user_res_div.innerText = (n == 0) ? " " : n
             }
+
+            if (SHOW_INFRA){
+                document.getElementById(user + "_" + SETTLEMENT).innerText = MAX_INFRA[SETTLEMENT] - USERS_DATA[user][SETTLEMENT]
+                if(USERS_DATA[user][SETTLEMENT] == MAX_INFRA[SETTLEMENT]){ color = "red"}else{ color = "black"}
+                document.getElementById(user + "_" + SETTLEMENT).style.color = color;
+                
+                document.getElementById(user + "_road").innerText = MAX_INFRA[ROAD] -USERS_DATA[user][ROAD]
+                if(USERS_DATA[user][ROAD] == MAX_INFRA[ROAD]){color = "red"}else{color = "black" }
+                document.getElementById(user + "_road").style.color = color;
+                
+                
+                document.getElementById(user + "_city").innerText = MAX_INFRA[CITY] - USERS_DATA[user][CITY]
+                if(USERS_DATA[user][CITY] == MAX_INFRA[CITY]){ color = "red"}else{ color = "black"}
+                document.getElementById(user + "_city").style.color = color;
+            }
         }
             
     });
 
-    // Update cards
-    document.getElementById("card_count_knight").innerText = `${USED_DEV_CARDS[KNIGHT]}/${MAX_DEV_CARDS[KNIGHT]}`;
-    document.getElementById("card_count_monopoly").innerText = `${USED_DEV_CARDS[MONOPOLY]}/${MAX_DEV_CARDS[MONOPOLY]}`;
-    document.getElementById("card_count_yearofplenty").innerText = `${USED_DEV_CARDS[PLENTY]}/${MAX_DEV_CARDS[PLENTY]}`;
-    document.getElementById("card_count_roadbuilding").innerText = `${USED_DEV_CARDS[ROAD2]}/${MAX_DEV_CARDS[ROAD2]}`;
-    document.getElementById("card_count_all").innerText = 25 - USED_DEV_CARDS["BOUGHT"];
+    if (SHOW_STATS){
 
-    // Update dice stats
-    for (i = 2; i < 13; i++) {
-        let e = document.getElementById("dice_stat_bar_" + i)
-        if (DICE_STATS[i] == 0){
-            e.style.display = "none";
+        // Update cards
+        document.getElementById("card_count_knight").innerText = `${USED_DEV_CARDS[KNIGHT]}/${MAX_DEV_CARDS[KNIGHT]}`;
+        document.getElementById("card_count_monopoly").innerText = `${USED_DEV_CARDS[MONOPOLY]}/${MAX_DEV_CARDS[MONOPOLY]}`;
+        document.getElementById("card_count_yearofplenty").innerText = `${USED_DEV_CARDS[PLENTY]}/${MAX_DEV_CARDS[PLENTY]}`;
+        document.getElementById("card_count_roadbuilding").innerText = `${USED_DEV_CARDS[ROAD2]}/${MAX_DEV_CARDS[ROAD2]}`;
+        document.getElementById("card_count_all").innerText = 25 - USED_DEV_CARDS["BOUGHT"];
+        
+            // Update dice stats
+        for (i = 2; i < 13; i++) {
+            let e = document.getElementById("dice_stat_bar_" + i)
+            if (DICE_STATS[i] == 0){
+                e.style.display = "none";
+            }
+            else{
+                e.style.display = "block";
+            }
+            e.innerText =  (DICE_STATS[i] == 0) ? "" : `    ${DICE_STATS[i]}` ;
+            e.style.width = DICE_STATS[i] * 80 / DICE_STATS["max"] + "px"
         }
-        else{
-            e.style.display = "block";
-        }
-        e.innerText =  (DICE_STATS[i] == 0) ? "" : `    ${DICE_STATS[i]}` ;
-        e.style.width = DICE_STATS[i] * 80 / DICE_STATS["max"] + "px"
     }
 }
 
 function addInitialHtml(){ 
-    document.body.insertAdjacentHTML('afterbegin', `
-        <div class="main-extention-container">
-            <div class="data-wrapper user" id="user-data-wrapper"></div>
-            <div class="data-wrapper stats" id="stats-data-wrapper">
-                <div class="data-div stats-div">
 
-                    <div class="user-div-hr"> Game data</div>
-                    <div class="data-div-hr"> Played cards</div>
-                    <div class="d_div">
-                        <img class="d_div_img" src="/dist/images/card_knight.svg" alt="">
-                        <span id="card_count_knight" class="r_div_span">0/14</span>
-                    </div>
-                    <div class="d_div">
-                        <img class="d_div_img" src="/dist/images/card_monopoly.svg" alt="">
-                        <span id="card_count_monopoly" class="r_div_span">0/2</span>
-                    </div>
-                    <div class="d_div">
-                        <img class="d_div_img" src="/dist/images/card_yearofplenty.svg" alt="">
-                        <span id="card_count_yearofplenty" class="r_div_span">0/2</span>
-                    </div>
-                    <div class="d_div">
-                        <img class="d_div_img" src="/dist/images/card_roadbuilding.svg" alt="">
-                        <span id="card_count_roadbuilding" class="r_div_span">0/2</span>
-                    </div>
-                    
-                    <div class="data-div-hr"> Cards in bank</div>
-                    <div class="d_div">
-                        <img class="d_div_img" src="/dist/images/card_devcardback.svg" alt="">
-                        <span id="card_count_all" class="r_div_span">25</span>
-                    </div>
-        
-                    <div class="data-div-hr"> Dice stats</div>
-                    <div class="d_div">
-                        <span class="d_div_span">2</span>
-                        <div class="d_bar" id="dice_stat_bar_2"></div>
-                    </div>
+    let htmlString = `<div class="main-extention-container">`
+    htmlString += `
+        <div class="config-wp">
+            <button class="conf-button binactive" id="inf">BLDNGS</button>
+            <button class="conf-button bactive" id="self">SELF</button>
+            <button class="conf-button bactive" id="stats">STATS</button>
+        </div>`
+
+    htmlString += `
+        <div class="data-wrapper user" id="user-data-wrapper">
+        </div>
+        <div class="data-wrapper stats" id="stats-data-wrapper">
+            <div class="data-div stats-div">
+
+                <div class="user-div-hr"> Game data</div>
+                <div class="data-div-hr"> Played cards</div>
+                <div class="d_div">
+                    <img class="d_div_img" src="/dist/images/card_knight.svg" alt="">
+                    <span id="card_count_knight" class="r_div_span">0/14</span>
+                </div>
+                <div class="d_div">
+                    <img class="d_div_img" src="/dist/images/card_monopoly.svg" alt="">
+                    <span id="card_count_monopoly" class="r_div_span">0/2</span>
+                </div>
+                <div class="d_div">
+                    <img class="d_div_img" src="/dist/images/card_yearofplenty.svg" alt="">
+                    <span id="card_count_yearofplenty" class="r_div_span">0/2</span>
+                </div>
+                <div class="d_div">
+                    <img class="d_div_img" src="/dist/images/card_roadbuilding.svg" alt="">
+                    <span id="card_count_roadbuilding" class="r_div_span">0/2</span>
+                </div>
                 
-                    <div class="d_div">
-                        <span class="d_div_span">3</span>
-                        <div class="d_bar" id="dice_stat_bar_3"></div>
-                    </div>
-                
-                    <div class="d_div">
-                        <span class="d_div_span">4</span>
-                        <div class="d_bar" id="dice_stat_bar_4"></div>
-                    </div>
-                
-                    <div class="d_div">
-                        <span class="d_div_span">5</span>
-                        <div class="d_bar" id="dice_stat_bar_5"></div>
-                    </div>
-                
-                    <div class="d_div">
-                        <span class="d_div_span">6</span>
-                        <div class="d_bar" id="dice_stat_bar_6"></div>
-                    </div>
-                
-                    <div class="d_div">
-                        <span class="d_div_span">7</span>
-                        <div class="d_bar" id="dice_stat_bar_7"></div>
-                    </div>
-                
-                    <div class="d_div">
-                        <span class="d_div_span">8</span>
-                        <div class="d_bar" id="dice_stat_bar_8"></div>
-                    </div>
-                
-                    <div class="d_div">
-                        <span class="d_div_span">9</span>
-                        <div class="d_bar" id="dice_stat_bar_9"></div>
-                    </div>
-                
-                    <div class="d_div">
-                        <span class="d_div_span">10</span>
-                        <div class="d_bar" id="dice_stat_bar_10"></div>
-                    </div>
-                
-                    <div class="d_div">
-                        <span class="d_div_span">11</span>
-                        <div class="d_bar" id="dice_stat_bar_11"></div>
-                    </div>
-                
-                    <div class="d_div">
-                        <span class="d_div_span">12</span>
-                        <div class="d_bar" id="dice_stat_bar_12"></div>
-                    </div>
+                <div class="data-div-hr"> Cards in bank</div>
+                <div class="d_div">
+                    <img class="d_div_img" src="/dist/images/card_devcardback.svg" alt="">
+                    <span id="card_count_all" class="r_div_span">25</span>
+                </div>
+    
+                <div class="data-div-hr"> Dice stats</div>
+                <div class="d_div">
+                    <span class="d_div_span">2</span>
+                    <div class="d_bar" id="dice_stat_bar_2"></div>
+                </div>
+            
+                <div class="d_div">
+                    <span class="d_div_span">3</span>
+                    <div class="d_bar" id="dice_stat_bar_3"></div>
+                </div>
+            
+                <div class="d_div">
+                    <span class="d_div_span">4</span>
+                    <div class="d_bar" id="dice_stat_bar_4"></div>
+                </div>
+            
+                <div class="d_div">
+                    <span class="d_div_span">5</span>
+                    <div class="d_bar" id="dice_stat_bar_5"></div>
+                </div>
+            
+                <div class="d_div">
+                    <span class="d_div_span">6</span>
+                    <div class="d_bar" id="dice_stat_bar_6"></div>
+                </div>
+            
+                <div class="d_div">
+                    <span class="d_div_span">7</span>
+                    <div class="d_bar" id="dice_stat_bar_7"></div>
+                </div>
+            
+                <div class="d_div">
+                    <span class="d_div_span">8</span>
+                    <div class="d_bar" id="dice_stat_bar_8"></div>
+                </div>
+            
+                <div class="d_div">
+                    <span class="d_div_span">9</span>
+                    <div class="d_bar" id="dice_stat_bar_9"></div>
+                </div>
+            
+                <div class="d_div">
+                    <span class="d_div_span">10</span>
+                    <div class="d_bar" id="dice_stat_bar_10"></div>
+                </div>
+            
+                <div class="d_div">
+                    <span class="d_div_span">11</span>
+                    <div class="d_bar" id="dice_stat_bar_11"></div>
+                </div>
+            
+                <div class="d_div">
+                    <span class="d_div_span">12</span>
+                    <div class="d_bar" id="dice_stat_bar_12"></div>
                 </div>
             </div>
-        </div>`);
+        </div>`
+
+    htmlString += `</div>`
+    document.body.insertAdjacentHTML('afterbegin', htmlString)
+
+    const infBtncall = () => {
+        SHOW_INFRA = SHOW_INFRA ? false : true
+        let display = 'none'
+        if (SHOW_INFRA){
+            display = 'flex'
+            document.getElementById("inf").classList.replace("binactive", "bactive")
+        }else{
+
+            document.getElementById("inf").classList.replace("bactive", "binactive")
+        }
+        document.querySelectorAll('.infra').forEach(element => {
+            element.style.display = display;
+        });
+        updateChart() 
+    };
+
+
+    const selfBtncall = () => {
+        SHOW_SELF = SHOW_SELF ? false : true
+        let display = 'none'
+        if (SHOW_SELF){
+            document.getElementById("self").classList.replace("binactive", "bactive")
+            display = 'block'
+        }else{
+            document.getElementById("self").classList.replace("bactive", "binactive")
+        }
+        document.getElementById(`userdiv_${MY_USERNAME}`).style.display = display;
+        updateChart() 
+    };
+
+    const statsBtncall = () => {
+        SHOW_STATS = SHOW_STATS ? false : true
+        let display = 'none'
+        if (SHOW_STATS){
+            display = 'block'
+            document.getElementById("stats").classList.replace("binactive", "bactive")
+        }else{
+
+            document.getElementById("stats").classList.replace("bactive", "binactive")
+        }
+        document.getElementById('stats-data-wrapper').style.display = display;
+        updateChart() 
+    };
+
+
+    document.getElementById("inf").onclick = infBtncall
+    document.getElementById("self").onclick = selfBtncall
+    document.getElementById("stats").onclick = statsBtncall
+
 }
 
+
+
 function addUserBlock(user) {
+    let color = USERS_DATA[user]["color"]
+    let is_me = (MY_USERNAME == user) ? "me": ""
     document.getElementById("user-data-wrapper").innerHTML += `
-        <div class="data-div user-div" id="userdiv_${user}">
+        <div class="data-div user-div  ${is_me}" id="userdiv_${user}">
 
         
             <div class="user-div-title">
-                <img class="user-div-title-img" src=${ USER_ICON[user]} alt="">
                 <div class="user-div-hr" style="color:${USER_COLORMAP[user]};">${user}</div>
-            </div>
+            </div>    
+            
+            
+            <div class="r_div_wp infra">
+                    <div class="r_div_build">
+                        <img class="r_div_img_build" src="/dist/images/city_${color}.svg">
+                        <span class="r_div_span_build" id="${user}_city"></span>
+                    </div>
+                        <div class="r_div_build">
+                            <img class="r_div_img_build" src="/dist/images/settlement_${color}.svg">
+                            <span class="r_div_span_build" id="${user}_settlement"></span>
+                        </div>
+                        
+                        <div class="r_div_build">
+                            <img class="r_div_img_build road" src="/dist/images/road_${color}.svg">
+                            <span class="r_div_span_build" id="${user}_road"></span>
+                        </div>
+                 </div>
             <div class="r_div_wp">
           
                 <div class="r_div">
@@ -564,10 +717,15 @@ function addUserBlock(user) {
                     <img class="r_div_img" src="/dist/images/card_ore.svg">
                     <span class="r_div_span" id="${user}_ore"></span>
                 </div>
-                
             </div>
-        </div>
-        `
+      
+        
+            
+                </div>
+                `
+
 }
 
-// -------------------------------------------------------------------------------- //
+
+
+// -------------------------------------------------------------------------------- 
