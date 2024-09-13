@@ -23,4 +23,4 @@ Parses public log and displays data on charts. Also hides ads.
 
 ## Collaboration
 
-This project is aimed for public use. It was intentionally made as a challenge and is open for improvements. If interested in participating contact me at santiago93echevarria@gmail.com
+This project is aimed for public use. It was intentionally made as a challenge and is open for improvements. There is no linkage with the colonist.io owners/developers. If interested in collaborating contact me at santiago93echevarria@gmail.com
