@@ -72,6 +72,7 @@ let IS_OBSERVER_ACTIVE = false
 let IS_DATA_ACTIVE = false;
 let TURNS = 0;
 let GAME_ENDED = false;
+let CANVAS_MOVED = false;
 
 // Statistics
 let DICE_STATS = { 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0, max: 0 }
@@ -149,6 +150,10 @@ function startLogObserver() {
             if (mutation.type === "childList") {
                 mutation.addedNodes.forEach(node => {
 
+                    if(!CANVAS_MOVED){
+                        moveCanvas()
+                    }
+
                     if (GAME_ENDED) {
                         LOG_OBSERVER.disconnect()
                         IS_OBSERVER_ACTIVE = false;
@@ -175,6 +180,7 @@ function startLogObserver() {
             }
         }
     });
+
 
     LOG_OBSERVER.observe(targetNode, { attributes: true, childList: true, subtree: true });
     IS_OBSERVER_ACTIVE = true;
@@ -513,19 +519,34 @@ function updateChart() {
     }
 }
 
+function moveCanvas(){
+
+    try{
+
+        document.getElementById("game-canvas").classList.add("to_right");;
+        
+        document.querySelectorAll('.main_block').forEach(element => {
+            element.classList.add("to_right");
+        });
+        document.getElementById("upper-left-container").classList.add("help_tf")
+        CANVAS_MOVED = true;
+    } catch(e){}
+}
+
+
 function addInitialHtml(){ 
 
     let htmlString = `<div class="main-extention-container">`
     htmlString += `
         <div class="config-wp">
-            <button class="conf-button binactive" id="inf">BLDNGS</button>
-            <button class="conf-button bactive" id="self">SELF</button>
-            <button class="conf-button bactive" id="stats">STATS</button>
+            <button class="conf-button binactive" id="inf">BUILDiNGS</button>
+            <button class="conf-button bactive" id="self">SELF DATA</button>
+            <button class="conf-button bactive" id="stats">STATISTICS</button>
         </div>`
 
     htmlString += `
-        <div class="data-wrapper user" id="user-data-wrapper">
-        </div>
+    <div class="block-container">
+   
         <div class="data-wrapper stats" id="stats-data-wrapper">
             <div class="data-div stats-div">
 
@@ -609,7 +630,11 @@ function addInitialHtml(){
                     <span class="d_div_span">12</span>
                     <div class="d_bar" id="dice_stat_bar_12"></div>
                 </div>
+                </div>
+                </div>
+                 <div class="data-wrapper user" id="user-data-wrapper">
             </div>
+            
         </div>`
 
     htmlString += `</div>`
