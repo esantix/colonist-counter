@@ -84,16 +84,6 @@ let MAX_INFRA = { [ROAD]: 15, [CITY]: 4, [SETTLEMENT]: 5}
 
 initOnLoad();
 
-// function enemyMsg(){
-//     let msg = ""
-//     Object.keys(USERS_DATA).forEach((user) => {
-
-//         if (user != MY_USERNAME ){
-//             msg += `You have ${"lumber".repeat(USERS_DATA[user]["lumber"])}  ${"brick".repeat(USERS_DATA[user]["brick"])}  ${"wool".repeat(USERS_DATA[user]["wool"])}  ${"grain".repeat(USERS_DATA[user]["grain"])}  ${"ore".repeat(USERS_DATA[user]["ore"])}  `
-//         }
-//     })
-//     return msg
-// }
 
 
 // ------------------------   INITIALIZATION FUNCTIONS  ---------------------------------- //
@@ -123,7 +113,7 @@ function init() {
     if (!IS_OBSERVER_ACTIVE) {
 
         addInitialHtml()
-
+        
         // TOPBAR.appendChild(STATS_DATA_WRAPPER);
         MY_USERNAME = document.getElementById('header_profile_username').innerText;
         document.getElementById("in_game_ab_left").style.display = "none";
@@ -132,7 +122,7 @@ function init() {
         document.getElementById("in_game_ab_bottom_small").style.display = "none";
         document.getElementById("remove_ad_in_game_right").style.display = "none";
         document.getElementById("remove_ad_in_game_left").style.display = "none";
-
+        
         startLogObserver();
         console.log(`%c Colonist Resource counter activated`, 'background: #222; color: #bada55')
         console.log("You are:" + MY_USERNAME)
@@ -151,14 +141,14 @@ function startLogObserver() {
                 mutation.addedNodes.forEach(node => {
 
                     if(!CANVAS_MOVED){
-                        moveCanvas()
+                       // moveCanvas()
                     }
 
                     if (GAME_ENDED) {
                         LOG_OBSERVER.disconnect()
                         IS_OBSERVER_ACTIVE = false;
                         console.log(`%c Colonist Resource counter deactivated`, 'background: #222; color: #bada55')
-
+                        
                     }
                     else if (node.classList && node.classList[0] == "message-post") {
 
@@ -167,20 +157,20 @@ function startLogObserver() {
                             GAME_ENDED = true;
                             return 0
                         }
-
+                        
                         let operations = parseLogMsg(node)
                         if (operations.length > 0) {
                             execute_ops(operations)
                         }
                         updateChart()
-
+                        
                     }
                 })
-
+                
             }
         }
     });
-
+    
 
     LOG_OBSERVER.observe(targetNode, { attributes: true, childList: true, subtree: true });
     IS_OBSERVER_ACTIVE = true;
@@ -188,25 +178,35 @@ function startLogObserver() {
 
 
 function onWin(){
-   // document.getElementById("game-chat-input").value = enemyMsg()
+    // document.getElementById("game-chat-input").value = enemyMsg()
 }
 
 // ------------------------  OPERATIONAL FUNCTIONS  ---------------------------------- //
 
+function enemyMsg(){
+    let msg = ""
+    Object.keys(USERS_DATA).forEach((user) => {
+
+        if (user != MY_USERNAME ){
+            msg += `You have ${"lumber".repeat(USERS_DATA[user]["lumber"])}  ${"brick".repeat(USERS_DATA[user]["brick"])}  ${"wool".repeat(USERS_DATA[user]["wool"])}  ${"grain".repeat(USERS_DATA[user]["grain"])}  ${"ore".repeat(USERS_DATA[user]["ore"])}  `
+        }
+    })
+    return msg
+}
 
 function parseLogMsg(logHtmlElement) {
     // Parses html message into a list of operations
     // Return list of [user, amount_to_add, resource, flag]
     var operations = [];
     try {
-
+        
         let msgCtn = logHtmlElement.childNodes[1].childNodes;
         var user = logHtmlElement.children[1].children[0].innerText.trim(); // no funciona para You Stole
         let color = logHtmlElement.children[1].children[0].style.color // Solo al existir log puedo scrappear color de usuario
         if (user) {
             if (!(user in USERS_DATA)) { USERS_DATA[user] = {
                                                              "color" : COLOR_CODE[color], 
-                                                              [ORE]: 0, 
+                                                             [ORE]: 0, 
                                                               [WOOL]: 0, 
                                                               [BRICK]: 0, 
                                                               [GRAIN]: 0, 
@@ -346,7 +346,7 @@ function parseLogMsg(logHtmlElement) {
                     break;
                 };
 
-                case "built a": { // Build infra
+                case "built a": { // Build building
                     let b_item = msgCtn[2].alt;
                     if (b_item == ROAD) {
                         USERS_DATA[user][ROAD] += 1
@@ -473,17 +473,16 @@ function updateChart() {
 
             for (let resource of RESOURCES_LIST) {
                 let user_res_div = document.getElementById(user + "_" + resource)
-                let odl_value = parseInt(user_res_div.innerText)
+                let old_value = parseInt(user_res_div.innerText)
                 let n = parseInt(USERS_DATA[user][resource]);
                 user_res_div.innerText = n;
-                if( n==0){
+                if( n == 0 ){
                     document.getElementById(user + "_" + resource).style.visibility = "hidden"
                 }else{
                     document.getElementById(user + "_" + resource).style.visibility = "visible"
 
                 }
-
-                if( n != odl_value){
+                if( n != old_value){
                     user_res_div.animate(
                         [
                           { transform: 'scale(1)'},
@@ -550,116 +549,126 @@ function moveCanvas(){
 
 function addInitialHtml(){ 
 
-    let htmlString = `<div class="main-extention-container">`
-    htmlString += `
-        <div class="config-wp">
-            <button class="conf-button bactive" id="inf">BUILDiNGS</button>
-            <button class="conf-button bactive" id="self">SELF DATA</button>
-            <button class="conf-button bactive" id="stats">STATISTICS</button>
-        </div>`
+    let htmlStringLeft = `
+        <div class="main-extention-container left">
 
-    htmlString += `
-    <div class="block-container">
-   
-        <div class="data-wrapper stats" id="stats-data-wrapper">
-            <div class="data-div stats-div">
-
-                <div class="user-div-hr"> Game data</div>
-                <div class="data-div-hr"> Played cards</div>
-                <div class="d_div">
-                    <img class="d_div_img" src="/dist/images/card_knight.svg" alt="">
-                    <span id="card_count_knight" class="card_div_span">0/14</span>
-                </div>
-                <div class="d_div">
-                    <img class="d_div_img" src="/dist/images/card_monopoly.svg" alt="">
-                    <span id="card_count_monopoly" class="card_div_span">0/2</span>
-                </div>
-                <div class="d_div">
-                    <img class="d_div_img" src="/dist/images/card_yearofplenty.svg" alt="">
-                    <span id="card_count_yearofplenty" class="card_div_span">0/2</span>
-                </div>
-                <div class="d_div">
-                    <img class="d_div_img" src="/dist/images/card_roadbuilding.svg" alt="">
-                    <span id="card_count_roadbuilding" class="card_div_span">0/2</span>
-                </div>
-                
-                <div class="data-div-hr"> Cards in bank</div>
-                <div class="d_div">
-                    <img class="d_div_img" src="/dist/images/card_devcardback.svg" alt="">
-                    <span id="card_count_all" class="card_div_span">25</span>
-                </div>
-    
-                <div class="data-div-hr"> Dice stats</div>
-                <div class="d_div">
-                    <span class="d_div_span">2</span>
-                    <div class="d_bar" id="dice_stat_bar_2"></div>
-                </div>
-            
-                <div class="d_div">
-                    <span class="d_div_span">3</span>
-                    <div class="d_bar" id="dice_stat_bar_3"></div>
-                </div>
-            
-                <div class="d_div">
-                    <span class="d_div_span">4</span>
-                    <div class="d_bar" id="dice_stat_bar_4"></div>
-                </div>
-            
-                <div class="d_div">
-                    <span class="d_div_span">5</span>
-                    <div class="d_bar" id="dice_stat_bar_5"></div>
-                </div>
-            
-                <div class="d_div">
-                    <span class="d_div_span">6</span>
-                    <div class="d_bar" id="dice_stat_bar_6"></div>
-                </div>
-            
-                <div class="d_div">
-                    <span class="d_div_span">7</span>
-                    <div class="d_bar" id="dice_stat_bar_7"></div>
-                </div>
-            
-                <div class="d_div">
-                    <span class="d_div_span">8</span>
-                    <div class="d_bar" id="dice_stat_bar_8"></div>
-                </div>
-            
-                <div class="d_div">
-                    <span class="d_div_span">9</span>
-                    <div class="d_bar" id="dice_stat_bar_9"></div>
-                </div>
-            
-                <div class="d_div">
-                    <span class="d_div_span">10</span>
-                    <div class="d_bar" id="dice_stat_bar_10"></div>
-                </div>
-            
-                <div class="d_div">
-                    <span class="d_div_span">11</span>
-                    <div class="d_bar" id="dice_stat_bar_11"></div>
-                </div>
-            
-                <div class="d_div">
-                    <span class="d_div_span">12</span>
-                    <div class="d_bar" id="dice_stat_bar_12"></div>
-                </div>
-                </div>
-                </div>
-            <div class="data-wrapper user" id="user-data-wrapper">
-
-
-
-
-
-
-
+            <div class="config-container">
+                <button class="config-button bactive" id="inf">BUILDINGS</button>
+                <button class="config-button bactive" id="self">SELF DATA</button>
             </div>
-            
+
+        
+            <div class="blocks-container" id="users-block-container">
+            </div>
+
         </div>`
 
-    htmlString += `</div>`
-    document.body.insertAdjacentHTML('afterbegin', htmlString)
+
+    let htmlStringRight = `
+        <div class="main-extention-container right">
+
+
+               <div class="config-container">
+                <button class="config-button bactive" id="stats">STATISTICS</button>
+            </div>
+
+        
+            <div class="blocks-container stats" id="stats-block-container">
+
+                <div class="block stats-block">
+
+                    <div class="block-hr">Game data</div>
+
+                    <div class="block-sub-hr"> Played cards</div>
+
+                    <div class="block-data-container">
+                        <img src="/dist/images/card_knight.svg" alt="">
+                        <span id="card_count_knight" >0/14</span>
+                    </div>
+                    <div class="block-data-container">
+                        <img src="/dist/images/card_monopoly.svg" alt="">
+                        <span id="card_count_monopoly" >0/2</span>
+                    </div>
+                    <div class="block-data-container">
+                        <img src="/dist/images/card_yearofplenty.svg" alt="">
+                        <span id="card_count_yearofplenty" >0/2</span>
+                    </div>
+                    <div class="block-data-container">
+                        <img src="/dist/images/card_roadbuilding.svg" alt="">
+                        <span id="card_count_roadbuilding" >0/2</span>
+                    </div>
+                    
+                    <div class="block-sub-hr"> Cards in bank</div>
+                    
+                    <div class="block-data-container">
+                        <img src="/dist/images/card_devcardback.svg" alt="">
+                        <span id="card_count_all" >25</span>
+                    </div>
+        
+                    <div class="block-sub-hr">Dice stats</div>
+
+                    <div class="block-data-container">
+                        <span class="dice-span">2</span>
+                        <div class="dice-bar" id="dice_stat_bar_2"></div>
+                    </div>
+                
+                    <div class="block-data-container">
+                        <span class="dice-span">3</span>
+                        <div class="dice-bar" id="dice_stat_bar_3"></div>
+                    </div>
+                
+                    <div class="block-data-container">
+                        <span class="dice-span">4</span>
+                        <div class="dice-bar" id="dice_stat_bar_4"></div>
+                    </div>
+                
+                    <div class="block-data-container">
+                        <span class="dice-span">5</span>
+                        <div class="dice-bar" id="dice_stat_bar_5"></div>
+                    </div>
+                
+                    <div class="block-data-container">
+                        <span class="dice-span">6</span>
+                        <div class="dice-bar" id="dice_stat_bar_6"></div>
+                    </div>
+                
+                    <div class="block-data-container">
+                        <span class="dice-span">7</span>
+                        <div class="dice-bar" id="dice_stat_bar_7"></div>
+                    </div>
+                
+                    <div class="block-data-container">
+                        <span class="dice-span">8</span>
+                        <div class="dice-bar" id="dice_stat_bar_8"></div>
+                    </div>
+                
+                    <div class="block-data-container">
+                        <span class="dice-span">9</span>
+                        <div class="dice-bar" id="dice_stat_bar_9"></div>
+                    </div>
+                
+                    <div class="block-data-container">
+                        <span class="dice-span">10</span>
+                        <div class="dice-bar" id="dice_stat_bar_10"></div>
+                    </div>
+                
+                    <div class="block-data-container">
+                        <span class="dice-span">11</span>
+                        <div class="dice-bar" id="dice_stat_bar_11"></div>
+                    </div>
+                
+                    <div class="block-data-container">
+                        <span class="dice-span">12</span>
+                        <div class="dice-bar" id="dice_stat_bar_12"></div>
+                    </div>
+                </div>
+            </div>
+
+        </div>`
+
+
+    document.body.insertAdjacentHTML('afterbegin', htmlStringLeft)
+    document.body.insertAdjacentHTML('afterbegin', htmlStringRight)
 
     const infBtncall = () => {
         SHOW_INFRA = SHOW_INFRA ? false : true
@@ -671,18 +680,13 @@ function addInitialHtml(){
 
             document.getElementById("inf").classList.replace("bactive", "binactive")
         }
-        document.querySelectorAll('.infra').forEach(element => {
+        document.querySelectorAll('.building').forEach(element => {
             element.style.display = display;
         });
 
         document.querySelectorAll('.divider').forEach(element => {
             element.style.display = display;
         });
-
-
-
-        divider
-
 
         updateChart() 
     };
@@ -711,7 +715,7 @@ function addInitialHtml(){
 
             document.getElementById("stats").classList.replace("bactive", "binactive")
         }
-        document.getElementById('stats-data-wrapper').style.display = display;
+        document.getElementById('stats-block-container').style.display = display;
         updateChart() 
     };
 
@@ -727,60 +731,56 @@ function addInitialHtml(){
 function addUserBlock(user) {
     let color = USERS_DATA[user]["color"]
     let is_me = (MY_USERNAME == user) ? "me": ""
-    document.getElementById("user-data-wrapper").innerHTML += `
-        <div class="data-div user-div  ${is_me}" id="userdiv_${user}">
 
-        
-            <div class="user-div-title">
-                <div class="user-div-hr" style="color:${USER_COLORMAP[user]};">${user}</div>
-            </div>    
-            
-            
-            <div class="r_div_wp infra">
-                    <div class="r_div_build">
-                        <img class="r_div_img_build" src="/dist/images/city_${color}.svg">
-                        <span class="r_div_span_build" id="${user}_city"></span>
-                    </div>
-                        <div class="r_div_build">
-                            <img class="r_div_img_build" src="/dist/images/settlement_${color}.svg">
-                            <span class="r_div_span_build" id="${user}_settlement"></span>
-                        </div>
-                        
-                        <div class="r_div_build">
-                            <img class="r_div_img_build road" src="/dist/images/road_${color}.svg">
-                            <span class="r_div_span_build" id="${user}_road"></span>
-                        </div>
-                 </div>
-         <span class="divider"><hr class="line"></span>
-            <div class="r_div_wp">
-          
-                <div class="r_div">
-                <span class="r_div_span anim" id="${user}_lumber">0</span>
-                    <img class="r_div_img" src="/dist/images/card_lumber.svg">
+    document.getElementById("users-block-container").innerHTML += `
+        <div class="block user-block ${is_me}" id="userdiv_${user}">
+
+            <div class="block-hr" style="color:${USER_COLORMAP[user]};">${user}</div>
+           
+            <div class="user-block-section building">
+
+                <div class="user-block-counter-building">
+                    <img src="/dist/images/city_${color}.svg">
+                    <span id="${user}_city"></span>
                 </div>
-                <div class="r_div">
-                <span class="r_div_span anim" id="${user}_brick">0</span>
-                    <img class="r_div_img" src="/dist/images/card_brick.svg">
+                <div class="user-block-counter-building">
+                    <img src="/dist/images/settlement_${color}.svg">
+                    <span id="${user}_settlement"></span>
                 </div>
-                <div class="r_div">
-                <span class="r_div_span anim" id="${user}_wool">0</span>
-                    <img class="r_div_img" src="/dist/images/card_wool.svg">
+                <div class="user-block-counter-building">
+                    <img src="/dist/images/road_${color}.svg">
+                    <span id="${user}_road"></span>
                 </div>
-                <div class="r_div">
-                <span class="r_div_span anim" id="${user}_grain">0</span>
-                    <img class="r_div_img" src="/dist/images/card_grain.svg">
-                </div>
-                <div class="r_div">
-                <span class="r_div_span anim" id="${user}_ore">0</span>
-                    <img class="r_div_img" src="/dist/images/card_ore.svg">
-                </div>
+
             </div>
-      
-        
-            
-                </div>
-                `
 
+            <span ><hr class="user-block-section-line"></span>
+
+            <div class="user-block-section resources">
+          
+                <div class="user-block-counter-resource">
+                    <span id="${user}_lumber">0</span>
+                    <img src="/dist/images/card_lumber.svg">
+                </div>
+                <div class="user-block-counter-resource">
+                    <span id="${user}_brick">0</span>
+                    <img src="/dist/images/card_brick.svg">
+                </div>
+                <div class="user-block-counter-resource">
+                    <span id="${user}_wool">0</span>
+                    <img src="/dist/images/card_wool.svg">
+                </div>
+                <div class="user-block-counter-resource">
+                    <span id="${user}_grain">0</span>
+                    <img src="/dist/images/card_grain.svg">
+                </div>
+                <div class="user-block-counter-resource">
+                    <span id="${user}_ore">0</span>
+                    <img src="/dist/images/card_ore.svg">
+                </div>
+
+            </div>
+        </div>`
 }
 
 
