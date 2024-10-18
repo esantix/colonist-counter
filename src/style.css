@@ -197,7 +197,7 @@
 .user-block-section.building {
    display: flex;
    margin-top: 8px;
-   flex-direction: column;
+   flex-direction: row;
    align-items: start;
    align-content: start;
 }
