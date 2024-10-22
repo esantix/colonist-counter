@@ -193,7 +193,7 @@ function startLogObserver() {
 
 
 function onWin() {
-    // document.getElementById("game-chat-input").value = enemyMsg()
+    document.getElementById("game-chat-input").value = enemyMsg()
 }
 
 // ------------------------  OPERATIONAL FUNCTIONS  ---------------------------------- //
@@ -222,6 +222,7 @@ function parseLogMsg(logHtmlElement) {
             if (!(user in USERS_DATA)) {
                 USERS_DATA[user] = {
                     "color": COLOR_CODE[color],
+                    "7": 0,
                     [ORE]: 0,
                     [WOOL]: 0,
                     [BRICK]: 0,
@@ -420,6 +421,7 @@ function parseLogMsg(logHtmlElement) {
     return operations;
 }
 
+
 function execute_ops(operations) {
     for (let j = 0; j < operations.length; j++) {
 
@@ -428,9 +430,16 @@ function execute_ops(operations) {
 
         let flag = action[3]
         if (flag == "DICE_DATA") {
+            let roll_user = action[0]
             let d1 = action[1]
             let d2 = action[2]
-            DICE_STATS[d1 + d2] += 1;
+            let total_roll = d1 + d2
+            DICE_STATS[total_roll] += 1;
+
+            if( total_roll == 7){ // Stats for those whinning players about unbalances stats
+                USERS_DATA[roll_user]["7"] += 1
+            }  
+
             DICE_STATS["max"] = Math.max(...Object.values(DICE_STATS))
         }
         else {
@@ -485,10 +494,15 @@ function updateChart() {
     Object.keys(USERS_DATA).forEach((user) => {
 
         let user_div = document.getElementById("userdiv_" + user)
+      
+
         if (user != MY_USERNAME || SHOW_SELF) {
             if (!user_div) {
                 addUserBlock(user)
             }
+
+            let user7s = document.getElementById(`${user}_7s`)
+            user7s.innerText = USERS_DATA[user]["7"]
 
             for (let resource of RESOURCES_LIST) {
                 let user_res_div = document.getElementById(user + "_" + resource)
@@ -746,7 +760,6 @@ function addInitialHtml() {
 }
 
 
-
 function addUserBlock(user) {
     let color = USERS_DATA[user]["color"]
     let is_me = (MY_USERNAME == user) ? "me" : ""
@@ -755,6 +768,7 @@ function addUserBlock(user) {
         <div class="block user-block ${is_me}" id="userdiv_${user}">
 
             <div class="block-hr" style="color:${USER_COLORMAP[user]};">${user}</div>
+
            
             <div class="user-block-section building">
 
@@ -799,9 +813,14 @@ function addUserBlock(user) {
                 </div>
 
             </div>
+            
+            <div class="user-block-section 7s">
+
+                <div class="user-block-counter-building">
+                    <span >Rolled 7's :</span>
+                    <span id="${user}_7s">0</span>
+                </div>
+
+            </div>
         </div>`
 }
-
-
-
-// -------------------------------------------------------------------------------- 
