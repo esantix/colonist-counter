@@ -33,6 +33,7 @@
 .config-button {
    font-size: 10px;
    height: 20px;
+   max-width: 120px;
    text-align: center;
    cursor: pointer;
    margin-left: 3px;
@@ -42,6 +43,11 @@
    font-weight: 700;
    background-color: #1fab1c;
    box-shadow: 1px 1px 0px 0px rgb(104, 104, 104);
+}
+
+.config-button.msg{
+   height: 100%;
+   width: 40px;
 }
 
 .config-button.bactive {
@@ -78,6 +84,8 @@
 .block.user-block {
    align-content: center;
    display: flex;
+   justify-content: center; /* Horizontal */
+   align-items: center;
 }
 
 .block.user-block.me {
@@ -94,7 +102,21 @@
    margin-bottom: 3px;
    margin-left: 10px;
    text-align: center;
+   display: flex;
+   flex-direction: row;
+   cursor: pointer;
 }
+
+.block-hr-drop {
+   font-weight: 700;
+   color: black;
+   margin-bottom: 3px;
+   margin-left: 10px;
+   cursor: pointer;
+   z-index: 99;
+
+}
+
 
 .block-sub-hr {
    color: rgb(0, 7, 71);
@@ -110,6 +132,21 @@
    color: black;
    margin-left: 5px;
    margin-bottom: 2px;
+   
+
+}
+
+.block-data-container.dev {
+   display: flex;
+   flex-direction: column;
+   color: black;
+   margin-left: 5px;
+   margin-bottom: 2px;
+}
+
+.devctn{
+   display: flex;
+   flex-direction: row;
 }
 
 .block-data-container img {
@@ -161,13 +198,13 @@
    margin: auto;
    display: flex;
    flex-direction: row;
-}
-
-.user-block-section-line {
+   width: 100%;
    border-top: 1px solid rgb(0, 0, 0);
+   margin-top: 5px;
+   padding-top: 10px;
+   justify-content: center; /* Horizontal */
+   align-items: center;
 }
-
-
 
 .user-block-counter-resource {
    display: flex;
@@ -214,6 +251,7 @@
    margin-left: 2px;
    margin-right: 2px;
    width: 24px;
+   height: 24px;
 }
 
 .user-block-counter-building span {
@@ -223,4 +261,8 @@
    margin-left: 3px;
    border-radius: 5px;
    text-align: center;
+}
+
+.hidden {
+   display: none;
 }

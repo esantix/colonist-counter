@@ -56,8 +56,9 @@ const COLOR_CODE = {
 }
 
 // ----------------------------   PARAMETERS ------------------------------------ //
-let SHOW_SELF = false;
 let SHOW_INFRA = true;
+let SHOW_RES = true;
+let SHOW_7 = true;
 let SHOW_STATS = true;
 
 // ----------------------------  AUX VARIABLES ------------------------------------ //
@@ -85,6 +86,9 @@ let MAX_INFRA = { [ROAD]: 15, [CITY]: 4, [SETTLEMENT]: 5 }
 
 initOnLoad();
 
+setInterval(() => {
+    clearAds();
+}, 4000);
 
 // ------------------------   INITIALIZATION FUNCTIONS  ---------------------------------- //
 
@@ -108,33 +112,54 @@ function initOnLoad() {
     LOG_LOADED_OBSERVER.observe(document.body, { childList: true, subtree: true });
 }
 
-function init() {
+function hideElementsByClassList(classList) {
+    // Loop through the list of classes
+    classList.forEach(className => {
+        // Select all elements with the current class name
+        const elements = document.querySelectorAll(`.${className}`);
+        // Hide each element by setting its display to 'none'
+        elements.forEach(element => {
+            element.style.display = 'none';
+        });
+    });
+}
 
+function clearAds(){
+    console.log("Clear ads")
+    let ads_class_list = [
+    "in_game_ab_left",
+     "in_game_ab_right",
+     "in_game_ab_bottom",
+     "in_game_ab_bottom_small",
+     "remove_ad_in_game_right",
+     "remove_ad_in_game_left",
+     "lobby_vertical_ab",
+     "adsbyvli"
+    ]
+     hideElementsByClassList(ads_class_list)
+
+}
+
+function init() {
+    clearAds()
     if (!IS_OBSERVER_ACTIVE) {
 
         addInitialHtml()
-
         // TOPBAR.appendChild(STATS_DATA_WRAPPER);
         MY_USERNAME = document.getElementById('header_profile_username').innerText;
-        document.getElementById("in_game_ab_left").style.display = "none";
-        document.getElementById("in_game_ab_right").style.display = "none";
-        document.getElementById("in_game_ab_bottom").style.display = "none";
-        document.getElementById("in_game_ab_bottom_small").style.display = "none";
-        document.getElementById("remove_ad_in_game_right").style.display = "none";
-        document.getElementById("remove_ad_in_game_left").style.display = "none";
-
+        clearAds()
         startLogObserver();
         resume()
 
         console.log(`%c Colonist Resource counter activated`, 'background: #222; color: #bada55')
         console.log("You are:" + MY_USERNAME)
 
-        onWin()
     }
 }
 
 function resume() {
     console.log("Resume started log")
+    clearAds()
     const targetNode = document.getElementById(LOG_WRAPPER_ID);
 
     for (let node of targetNode.childNodes) {
@@ -147,6 +172,7 @@ function resume() {
 }
 
 function startLogObserver() {
+    clearAds()
     // Refresh data on changes on log element 
     const targetNode = document.getElementById(LOG_WRAPPER_ID);
     const LOG_OBSERVER = new MutationObserver(function (mutationsList, observer) {
@@ -192,18 +218,21 @@ function startLogObserver() {
 }
 
 
-function onWin() {
-    document.getElementById("game-chat-input").value = enemyMsg()
+function bully() {
+    document.getElementById("game-chat-input").value = resourcesChatMsg()
+    //document.getElementById("game-chat-form").submit();
 }
 
 // ------------------------  OPERATIONAL FUNCTIONS  ---------------------------------- //
 
-function enemyMsg() {
+
+function resourcesChatMsg() {
     let msg = ""
     Object.keys(USERS_DATA).forEach((user) => {
 
         if (user != MY_USERNAME) {
-            msg += `You have ${"lumber".repeat(USERS_DATA[user]["lumber"])}  ${"brick".repeat(USERS_DATA[user]["brick"])}  ${"wool".repeat(USERS_DATA[user]["wool"])}  ${"grain".repeat(USERS_DATA[user]["grain"])}  ${"ore".repeat(USERS_DATA[user]["ore"])}  `
+            msg += `${user} has ${"lumber ".repeat(USERS_DATA[user]["lumber"])}  ${"brick ".repeat(USERS_DATA[user]["brick"])}  ${"wool ".repeat(USERS_DATA[user]["wool"])}  ${"grain ".repeat(USERS_DATA[user]["grain"])}  ${"ore ".repeat(USERS_DATA[user]["ore"])}| `
+            // msg += `${user} has ${USERS_DATA[user]["lumber"]} lumber ${USERS_DATA[user]["brick"]} brick ${USERS_DATA[user]["wool"]} wool ${USERS_DATA[user]["grain"]} grain  ${USERS_DATA[user]["ore"]} ore | `
         }
     })
     return msg
@@ -212,6 +241,7 @@ function enemyMsg() {
 function parseLogMsg(logHtmlElement) {
     // Parses html message into a list of operations
     // Return list of [user, amount_to_add, resource, flag]
+    clearAds()
     var operations = [];
     try {
 
@@ -488,17 +518,43 @@ function log_action(action) {
 
 function updateChart() {
 
-    //document.getElementById("game-chat-input").value = enemyMsg()
 
+    
+    
+    
+    document.getElementById("game-chat-input").value = ""
+    
     // Update Resources
     Object.keys(USERS_DATA).forEach((user) => {
-
+        
         let user_div = document.getElementById("userdiv_" + user)
-      
-
-        if (user != MY_USERNAME || SHOW_SELF) {
+        
+        
+        
+            const dropd = () => {
+                let el = document.getElementById(`dataholder_${user}`)
+                if (el.classList.contains("hidden")) {
+                    el.classList.replace("hidden", "visible")
+                } else {
+                    el.classList.replace("visible", "hidden")
+                }
+        
+            }
+            
+        
+        
+            const element = document.getElementById(`drop_${user}`);
+            console.log("Element found:", element);
+            if (element) {
+                element.onclick = dropd;
+            } else {
+                console.error(`Element drop_${user} not found!`);
+            }
             if (!user_div) {
                 addUserBlock(user)
+                
+            
+            
             }
 
             let user7s = document.getElementById(`${user}_7s`)
@@ -537,17 +593,17 @@ function updateChart() {
                 document.getElementById(user + "_city").innerText = MAX_INFRA[CITY] - USERS_DATA[user][CITY]
 
             }
-        }
+        
 
     });
 
     if (SHOW_STATS) {
 
         // Update cards
-        document.getElementById("card_count_knight").innerText = `${USED_DEV_CARDS[KNIGHT]}/${MAX_DEV_CARDS[KNIGHT]}`;
-        document.getElementById("card_count_monopoly").innerText = `${USED_DEV_CARDS[MONOPOLY]}/${MAX_DEV_CARDS[MONOPOLY]}`;
-        document.getElementById("card_count_yearofplenty").innerText = `${USED_DEV_CARDS[PLENTY]}/${MAX_DEV_CARDS[PLENTY]}`;
-        document.getElementById("card_count_roadbuilding").innerText = `${USED_DEV_CARDS[ROAD2]}/${MAX_DEV_CARDS[ROAD2]}`;
+        document.getElementById("card_count_knight").innerText = `${USED_DEV_CARDS[KNIGHT]}`;
+        document.getElementById("card_count_monopoly").innerText = `${USED_DEV_CARDS[MONOPOLY]}`;
+        document.getElementById("card_count_yearofplenty").innerText = `${USED_DEV_CARDS[PLENTY]}`;
+        document.getElementById("card_count_roadbuilding").innerText = `${USED_DEV_CARDS[ROAD2]}`;
         document.getElementById("card_count_all").innerText = 25 - USED_DEV_CARDS["BOUGHT"];
 
         // Update dice stats
@@ -582,17 +638,30 @@ function moveCanvas() {
 
 function addInitialHtml() {
 
+
     let htmlStringLeft = `
         <div class="main-extention-container left">
 
             <div class="config-container">
+                <button class="config-button bactive" id="inf-r">RESOURCES</button>
+                <button class="config-button bactive" id="inf-7">SEVENS</button>
+            </div>
+            
+            <div class="config-container">
                 <button class="config-button bactive" id="inf">BUILDINGS</button>
-                <button class="config-button bactive" id="self">SELF DATA</button>
+                <button class="config-button bactive" id="stats">STATISTICS</button>
+            </div>
+                
+
+ 
+
+
+            <div class="blocks-container" id="users-block-container">
+                
+              
             </div>
 
-        
-            <div class="blocks-container" id="users-block-container">
-            </div>
+            
 
         </div>`
 
@@ -601,36 +670,35 @@ function addInitialHtml() {
         <div class="main-extention-container right">
 
 
-               <div class="config-container">
-                <button class="config-button bactive" id="stats">STATISTICS</button>
-            </div>
+         
 
         
             <div class="blocks-container stats" id="stats-block-container">
 
                 <div class="block stats-block">
 
-                    <div class="block-hr">Game data</div>
 
                     <div class="block-sub-hr"> Played cards</div>
 
-                    <div class="block-data-container">
-                        <img src="/dist/images/card_knight.svg" alt="">
-                        <span id="card_count_knight" >0/14</span>
+                                      <div class="devctn">
+
+                                <div class="block-data-container dev">
+                                    <img src="/dist/images/card_knight.svg" alt="">
+                                    <span id="card_count_knight" >0</span>
+                                </div>
+                                <div class="block-data-container dev">
+                                    <img src="/dist/images/card_monopoly.svg" alt="">
+                                    <span id="card_count_monopoly" >0/2</span>
+                                </div>
+                                <div class="block-data-container dev">
+                                    <img src="/dist/images/card_yearofplenty.svg" alt="">
+                                    <span id="card_count_yearofplenty" >0</span>
                     </div>
-                    <div class="block-data-container">
-                        <img src="/dist/images/card_monopoly.svg" alt="">
-                        <span id="card_count_monopoly" >0/2</span>
-                    </div>
-                    <div class="block-data-container">
-                        <img src="/dist/images/card_yearofplenty.svg" alt="">
-                        <span id="card_count_yearofplenty" >0/2</span>
-                    </div>
-                    <div class="block-data-container">
-                        <img src="/dist/images/card_roadbuilding.svg" alt="">
-                        <span id="card_count_roadbuilding" >0/2</span>
-                    </div>
-                    
+                                <div class="block-data-container dev">
+                                    <img src="/dist/images/card_roadbuilding.svg" alt="">
+                                    <span id="card_count_roadbuilding" >0</span>
+                                </div>
+                      </div>
                     <div class="block-sub-hr"> Cards in bank</div>
                     
                     <div class="block-data-container">
@@ -697,11 +765,21 @@ function addInitialHtml() {
                 </div>
             </div>
 
+    
+
+
+
+
+
         </div>`
 
 
     document.body.insertAdjacentHTML('afterbegin', htmlStringLeft)
     document.body.insertAdjacentHTML('afterbegin', htmlStringRight)
+
+    document.getElementById("game-chat-form").insertAdjacentHTML('beforebegin', ` <div class="config-button msg" id="bully-msg">R</div>`)
+
+    
 
     const infBtncall = () => {
         SHOW_INFRA = SHOW_INFRA ? false : true
@@ -717,26 +795,12 @@ function addInitialHtml() {
             element.style.display = display;
         });
 
-        document.querySelectorAll('.divider').forEach(element => {
-            element.style.display = display;
-        });
 
         updateChart()
     };
 
 
-    const selfBtncall = () => {
-        SHOW_SELF = SHOW_SELF ? false : true
-        let display = 'none'
-        if (SHOW_SELF) {
-            document.getElementById("self").classList.replace("binactive", "bactive")
-            display = 'block'
-        } else {
-            document.getElementById("self").classList.replace("bactive", "binactive")
-        }
-        document.getElementById(`userdiv_${MY_USERNAME}`).style.display = display;
-        updateChart()
-    };
+
 
     const statsBtncall = () => {
         SHOW_STATS = SHOW_STATS ? false : true
@@ -752,12 +816,53 @@ function addInitialHtml() {
         updateChart()
     };
 
+    const resBtncall = () => {
+        SHOW_RES = SHOW_RES ? false : true
+        let display = 'none'
+        if (SHOW_RES) {
+            display = 'flex'
+            document.getElementById("inf-r").classList.replace("binactive", "bactive")
+        } else {
+
+            document.getElementById("inf-r").classList.replace("bactive", "binactive")
+        }
+        document.querySelectorAll('.resources').forEach(element => {
+            element.style.display = display;
+        });
+
+
+        updateChart()
+    };
+
+
+    const sevBtncall = () => {
+        SHOW_7 = SHOW_7 ? false : true
+        let display = 'none'
+        if (SHOW_7) {
+            display = 'flex'
+            document.getElementById("inf-7").classList.replace("binactive", "bactive")
+        } else {
+
+            document.getElementById("inf-7").classList.replace("bactive", "binactive")
+        }
+        document.querySelectorAll('.sevens').forEach(element => {
+            element.style.display = display;
+        });
+
+
+        updateChart()
+    };
 
     document.getElementById("inf").onclick = infBtncall
-    document.getElementById("self").onclick = selfBtncall
+    document.getElementById("inf-r").onclick = resBtncall
+    document.getElementById("inf-7").onclick = sevBtncall
     document.getElementById("stats").onclick = statsBtncall
+    document.getElementById("bully-msg").onclick = bully
 
 }
+
+
+
 
 
 function addUserBlock(user) {
@@ -767,27 +872,13 @@ function addUserBlock(user) {
     document.getElementById("users-block-container").innerHTML += `
         <div class="block user-block ${is_me}" id="userdiv_${user}">
 
-            <div class="block-hr" style="color:${USER_COLORMAP[user]};">${user}</div>
-
-           
-            <div class="user-block-section building">
-
-                <div class="user-block-counter-building">
-                    <img src="/dist/images/city_${color}.svg">
-                    <span id="${user}_city"></span>
-                </div>
-                <div class="user-block-counter-building">
-                    <img src="/dist/images/settlement_${color}.svg">
-                    <span id="${user}_settlement"></span>
-                </div>
-                <div class="user-block-counter-building">
-                    <img src="/dist/images/road_${color}.svg">
-                    <span id="${user}_road"></span>
-                </div>
-
+            <div class="block-hr" id="drop_${user}" style="color:${USER_COLORMAP[user]};">${user}
+            
             </div>
 
-            <span ><hr class="user-block-section-line"></span>
+            <div class="user-block-section-data visible" id="dataholder_${user}">
+           
+
 
             <div class="user-block-section resources">
           
@@ -812,15 +903,33 @@ function addUserBlock(user) {
                     <img src="/dist/images/card_ore.svg">
                 </div>
 
-            </div>
-            
-            <div class="user-block-section 7s">
+            </div> <div class="user-block-section building">
 
                 <div class="user-block-counter-building">
-                    <span >Rolled 7's :</span>
+                    <img src="/dist/images/city_${color}.svg">
+                    <span id="${user}_city"></span>
+                </div>
+                <div class="user-block-counter-building">
+                    <img src="/dist/images/settlement_${color}.svg">
+                    <span id="${user}_settlement"></span>
+                </div>
+                <div class="user-block-counter-building">
+                    <img src="/dist/images/road_${color}.svg">
+                    <span id="${user}_road"></span>
+                </div>
+
+            </div>
+            <div class="user-block-section sevens ${  SHOW_7 ? "visible" : "hidden"}">
+
+                <div class="user-block-counter-building">
+                    <span >Rolled sevens: </span>
                     <span id="${user}_7s">0</span>
                 </div>
 
             </div>
-        </div>`
+            </div>
+        </div>`;
+
+
+ 
 }
