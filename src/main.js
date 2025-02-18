@@ -585,17 +585,17 @@ function updateChart() {
                 }
             }
 
-            if (SHOW_INFRA) {
+        
                 document.getElementById(user + "_" + SETTLEMENT).innerText = MAX_INFRA[SETTLEMENT] - USERS_DATA[user][SETTLEMENT]
                 document.getElementById(user + "_road").innerText = MAX_INFRA[ROAD] - USERS_DATA[user][ROAD]
                 document.getElementById(user + "_city").innerText = MAX_INFRA[CITY] - USERS_DATA[user][CITY]
 
-            }
+            
         
 
     });
 
-    if (SHOW_STATS) {
+
 
         // Update cards
         document.getElementById("card_count_knight").innerText = `${USED_DEV_CARDS[KNIGHT]}`;
@@ -616,18 +616,11 @@ function updateChart() {
             e.innerText = (DICE_STATS[i] == 0) ? "" : `    ${DICE_STATS[i]}`;
             e.style.width = DICE_STATS[i] * 80 / DICE_STATS["max"] + "px"
         }
-    }
+    
 }
 
 
 function addInitialHtml() {
-
-
-    let htmlStringLeft = `
-        <div class="main-extention-container left">
-            <div class="blocks-container" id="users-block-container">
-        </div>`
-
 
     let diceBlock = '<div class="block-sub-hr">Dice stats</div>';
     for (let n = 2; n <= 12; n++) {
@@ -636,11 +629,18 @@ function addInitialHtml() {
             <div class="dice-bar" id="dice_stat_bar_${n}"></div>
         </div>`;
     }
+    let htmlStringLeft = `
+        <div class="main-extention-container left">
+            <div class="blocks-container hidden" id="users-block-container">
+        </div>`
+    document.body.insertAdjacentHTML('afterbegin', htmlStringLeft)
+
+
 
 
     let htmlStringRight = `
         <div class="main-extention-container right">
-            <div class="blocks-container stats" id="stats-block-container">
+            <div class="blocks-container stats hidden" id="stats-block-container">
 
                 <div class="block stats-block">
 
@@ -675,93 +675,176 @@ function addInitialHtml() {
                 </div>
             </div>
          </div>`
-
-
-    document.body.insertAdjacentHTML('afterbegin', htmlStringLeft)
     document.body.insertAdjacentHTML('afterbegin', htmlStringRight)
 
-    const helpButtonsContainer = document.getElementById("help_buttons_section")
-    helpButtonsContainer.innerHTML += `<button class="config-button bactive" id="stats">ST</button>`
-    helpButtonsContainer.innerHTML += `<button class="config-button bactive" id="inf-r">RS</button>`
-    helpButtonsContainer.innerHTML += `<button class="config-button bactive" id="inf-7">7</button>`
-    helpButtonsContainer.innerHTML += `<button class="config-button bactive" id="inf">BD</button>`
-    helpButtonsContainer.innerHTML += `<button class="config-button bactive" id="bully-msg">MSJ</button>`
-    
-    const infBtncall = () => {
-        SHOW_INFRA = SHOW_INFRA ? false : true
-        let display = 'none'
-        if (SHOW_INFRA) {
-            display = 'flex'
-            document.getElementById("inf").classList.replace("binactive", "bactive")
-        } else {
-
-            document.getElementById("inf").classList.replace("bactive", "binactive")
-        }
-        document.querySelectorAll('.building').forEach(element => {
-            element.style.display = display;
-        });
 
 
-        updateChart()
-    };
 
-    const statsBtncall = () => {
-        SHOW_STATS = SHOW_STATS ? false : true
-        let display = 'none'
-        if (SHOW_STATS) {
-            display = 'block'
-            document.getElementById("stats").classList.replace("binactive", "bactive")
-        } else {
+    document.body.insertAdjacentHTML('afterbegin', ` 
+        
+        <div class="extensions-settings-container hidden" id="extensions-settings-container"> 
+        <div class="extensions-settings-container-mid" id="extensions-settings-container-mid" > 
+        
+        <div id="extensions-settings-close"> X </div>
 
-            document.getElementById("stats").classList.replace("bactive", "binactive")
-        }
-        document.getElementById('stats-block-container').style.display = display;
-        updateChart()
-    };
-
-    const resBtncall = () => {
-        SHOW_RES = SHOW_RES ? false : true
-        let display = 'none'
-        if (SHOW_RES) {
-            display = 'flex'
-            document.getElementById("inf-r").classList.replace("binactive", "bactive")
-        } else {
-
-            document.getElementById("inf-r").classList.replace("bactive", "binactive")
-        }
-        document.querySelectorAll('.resources').forEach(element => {
-            element.style.display = display;
-        });
+        
+        <div class="config-button-section-hr"> Charts  </div>
+        <div class="config-button-section">
+        <div class="config-button bactive" id="all">Hide user data</div>
+        <div class="config-button bactive" id="stats">Hide game statistics</div>
+        </div>
+        
+        <div class="config-button-section-hr"> User chart options  </div>
+        <div class="config-button-section">
+            <div class="config-button bactive" id="inf-r">Hide resources</div>
+            <div class="config-button bactive" id="inf">Hide available buildings</div>
+            <div class="config-button bactive" id="inf-7">Hide rolled 7s</div>
+         </div>
 
 
-        updateChart()
-    };
+        </div>
+            
+        </div>`)
 
-    const sevBtncall = () => {
-        SHOW_7 = SHOW_7 ? false : true
-        let display = 'none'
-        if (SHOW_7) {
-            display = 'flex'
-            document.getElementById("inf-7").classList.replace("binactive", "bactive")
-        } else {
-
-            document.getElementById("inf-7").classList.replace("bactive", "binactive")
-        }
-        document.querySelectorAll('.sevens').forEach(element => {
-            element.style.display = display;
-        });
+//        <div class="config-button bactive" id="bully-msg">MSJ</div>
 
 
-        updateChart()
-    };
+        const helpButtonsContainer = document.getElementById("help_buttons_section")
+        helpButtonsContainer.innerHTML +=  `<div class="config-button bactive" id="EXT">
+        
+      
 
-    document.getElementById("inf").onclick = infBtncall
-    document.getElementById("inf-r").onclick = resBtncall
-    document.getElementById("inf-7").onclick = sevBtncall
-    document.getElementById("stats").onclick = statsBtncall
-    document.getElementById("bully-msg").onclick = bully
+        
+        </div>`
+        
+        
+        const infBtncall = () => {
+            SHOW_INFRA = SHOW_INFRA ? false : true
+            let display = 'none'
+            if (SHOW_INFRA) {
+                display = 'flex'
+                document.getElementById("inf").classList.replace("binactive", "bactive")
+                document.getElementById("inf").innerText = "Hide available buildings"
+            } else {
+                
+                document.getElementById("inf").classList.replace("bactive", "binactive")
+                document.getElementById("inf").innerText = "Show available buildings"
+            }
+            document.querySelectorAll('.building').forEach(element => {
+                element.style.display = display;
+            });
+            
+            
+            updateChart()
+        };
+        
+        const statsBtncall = () => {
+            let el = document.getElementById(`stats-block-container`)
+            if (el.classList.contains("hidden")) {
+                el.classList.replace("hidden", "visible")
+                document.getElementById("stats").classList.replace("binactive", "bactive")
+                 document.getElementById("stats").innerText = "Hide game statistics"
+                } else {
+                    el.classList.replace("visible", "hidden")
+                    document.getElementById("stats").classList.replace("bactive", "binactive")
+                    document.getElementById("stats").innerText = "Show game statistics"
+            }
+            document.getElementById('stats-block-container').style.display = display;
+            updateChart()
+        };
+        
+        const resBtncall = () => {
+            SHOW_RES = SHOW_RES ? false : true
+            let display = 'none'
+            if (SHOW_RES) {
+                display = 'flex'
+                document.getElementById("inf-r").classList.replace("binactive", "bactive")
+                document.getElementById("inf-r").innerText = "Hide resources"
+            } else {
+                
+                document.getElementById("inf-r").classList.replace("bactive", "binactive")
+                document.getElementById("inf-r").innerText = "Show resources"
+            }
+            document.querySelectorAll('.resources').forEach(element => {
+                element.style.display = display;
+            });
+            
+            
+            updateChart()
+        };
+        
+        const sevBtncall = () => {
+            SHOW_7 = SHOW_7 ? false : true
+            let display = 'none'
+            if (SHOW_7) {
+                display = 'flex'
+                document.getElementById("inf-7").classList.replace("binactive", "bactive")
+                document.getElementById("inf-7").innerText = "Hide rolled 7s"
+            } else {
+                
+                document.getElementById("inf-7").classList.replace("bactive", "binactive")
+                document.getElementById("inf-7").innerText = "Show rolled 7s"
+            }
+            document.querySelectorAll('.sevens').forEach(element => {
+                element.style.display = display;
+            });
+            
+            
+            updateChart()
+        };
 
-}
+        const allBtncall = () => {
+            let el = document.getElementById(`users-block-container`)
+            if (el.classList.contains("hidden")) {
+
+                el.classList.replace("hidden", "visible")
+                document.getElementById("all").classList.replace("binactive", "bactive")
+                document.getElementById("all").innerText = "Hide user data"
+            } else {
+                el.classList.replace("visible", "hidden")
+                document.getElementById("all").classList.replace("bactive", "binactive")
+                document.getElementById("all").innerText = "Show user data"
+            }
+        };
+
+        const switchMenu = () => {
+            let el = document.getElementById(`extensions-settings-container`)
+            let elm = document.getElementById(`extensions-settings-container-mid`)
+            let cv = document.getElementById(`game-canvas`)
+
+
+
+            let w = cv.style.width
+            let h = cv.style.height
+
+            elm.style.width = w
+            elm.style.height = h
+
+
+            if (el.classList.contains("hidden")) {
+                el.classList.replace("hidden", "visible")
+            } else {
+                el.classList.replace("visible", "hidden")
+            }
+        };
+
+        document.getElementById("extensions-settings-close").onclick = switchMenu
+
+
+        document.getElementById("inf").onclick = infBtncall
+        document.getElementById("inf-r").onclick = resBtncall
+        document.getElementById("inf-7").onclick = sevBtncall
+        document.getElementById("stats").onclick = statsBtncall
+        document.getElementById("all").onclick = allBtncall
+       // document.getElementById("bully-msg").onclick = bully
+        document.getElementById("EXT").onclick = switchMenu
+        
+        
+        
+    }
+
+
+
 
 function addUserBlock(user) {
     let color = USERS_DATA[user]["color"]
@@ -829,3 +912,5 @@ function addUserBlock(user) {
             </div>
         </div>`;
 }
+
+

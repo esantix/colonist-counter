@@ -30,10 +30,22 @@
    padding-top: 5px;
 }
 
+.config-button-section{
+   max-width: 300px;
+   align-items: start;
+   margin-bottom: 40px;
+   display: flex;
+   flex-direction: column;
+
+}
+
+.config-button-section-hr{
+   font-size: 25px;
+}
+
 .config-button {
    font-size: 20px;
    height: 40px;
-   max-width: 40px;
    text-align: center;
    cursor: pointer;
    margin-left: 3px;
@@ -92,7 +104,7 @@
 }
 
 .block.user-block.me {
-   background-image: linear-gradient(to bottom, #fcfaf5, #bad3e4);
+   background-image: linear-gradient(to bottom, #fcfaf5, #a8cbe3);
 }
 
 #stats-block {
@@ -268,4 +280,34 @@
 
 .hidden {
    display: none;
+}
+
+
+.extensions-settings-container {
+   width: 100%;
+   height: 100%;
+   align-content: center;
+   display: flex;
+   justify-content: center; /* Horizontal */
+   align-items: center;
+}
+
+.extensions-settings-container-mid{
+   background: rgba(0, 0, 0, 0.713); 
+   padding: 100px;
+   z-index: 40; 
+
+}
+
+#extensions-settings-close {
+font-weight: 800;
+font-size: 50px;
+z-index: 45; 
+cursor: pointer;
+margin-bottom: 40px;
+-webkit-text-stroke: 2px black;
+}
+
+#EXT{
+   -webkit-text-stroke: 2px rgb(93, 93, 93);
 }
