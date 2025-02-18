@@ -125,19 +125,19 @@ function hideElementsByClassList(classList) {
     });
 }
 
-function clearAds(){
+function clearAds() {
     console.log("Clear ads")
     let ads_class_list = [
-    "in_game_ab_left",
-     "in_game_ab_right",
-     "in_game_ab_bottom",
-     "in_game_ab_bottom_small",
-     "remove_ad_in_game_right",
-     "remove_ad_in_game_left",
-     "lobby_vertical_ab",
-     "adsbyvli"
+        "in_game_ab_left",
+        "in_game_ab_right",
+        "in_game_ab_bottom",
+        "in_game_ab_bottom_small",
+        "remove_ad_in_game_right",
+        "remove_ad_in_game_left",
+        "lobby_vertical_ab",
+        "adsbyvli"
     ]
-     hideElementsByClassList(ads_class_list)
+    hideElementsByClassList(ads_class_list)
 
 }
 
@@ -232,11 +232,11 @@ function resourcesChatMsg() {
         if (user != MY_USERNAME) {
 
             let el = document.getElementById(`dataholder_${user}`)
-        if (el.classList.contains("visible")) {
-            msg += `${user} has ${"lumber ".repeat(USERS_DATA[user]["lumber"])}  ${"brick ".repeat(USERS_DATA[user]["brick"])}  ${"wool ".repeat(USERS_DATA[user]["wool"])}  ${"grain ".repeat(USERS_DATA[user]["grain"])}  ${"ore ".repeat(USERS_DATA[user]["ore"])}| `
-            // msg += `${user} has ${USERS_DATA[user]["lumber"]} lumber ${USERS_DATA[user]["brick"]} brick ${USERS_DATA[user]["wool"]} wool ${USERS_DATA[user]["grain"]} grain  ${USERS_DATA[user]["ore"]} ore | `
+            if (el.classList.contains("visible")) {
+                msg += `${user} has ${"lumber ".repeat(USERS_DATA[user]["lumber"])}  ${"brick ".repeat(USERS_DATA[user]["brick"])}  ${"wool ".repeat(USERS_DATA[user]["wool"])}  ${"grain ".repeat(USERS_DATA[user]["grain"])}  ${"ore ".repeat(USERS_DATA[user]["ore"])}| `
+                // msg += `${user} has ${USERS_DATA[user]["lumber"]} lumber ${USERS_DATA[user]["brick"]} brick ${USERS_DATA[user]["wool"]} wool ${USERS_DATA[user]["grain"]} grain  ${USERS_DATA[user]["ore"]} ore | `
+            }
         }
-    }
     })
     return msg
 }
@@ -454,7 +454,6 @@ function parseLogMsg(logHtmlElement) {
     return operations;
 }
 
-
 function execute_ops(operations) {
     for (let j = 0; j < operations.length; j++) {
 
@@ -469,9 +468,9 @@ function execute_ops(operations) {
             let total_roll = d1 + d2
             DICE_STATS[total_roll] += 1;
 
-            if( total_roll == 7){ // Stats for those whinning players about unbalances stats
+            if (total_roll == 7) { // Stats for those whinning players about unbalances stats
                 USERS_DATA[roll_user]["7"] += 1
-            }  
+            }
 
             DICE_STATS["max"] = Math.max(...Object.values(DICE_STATS))
         }
@@ -522,103 +521,102 @@ function log_action(action) {
 function updateChart() {
 
     document.getElementById("game-chat-input").value = ""
-    
+
     // Update Resources
     Object.keys(USERS_DATA).forEach((user) => {
-        
+
         let user_div = document.getElementById("userdiv_" + user)
-        
-        
-        
-            const dropd = () => {
-                let el = document.getElementById(`dataholder_${user}`)
-                if (el.classList.contains("hidden")) {
-                    el.classList.replace("hidden", "visible")
-                } else {
-                    el.classList.replace("visible", "hidden")
-                }
-        
-            }
-            
-        
-        
-            const element = document.getElementById(`drop_${user}`);
-            if (element) {
-                element.onclick = dropd;
+
+
+
+        const dropd = () => {
+            let el = document.getElementById(`dataholder_${user}`)
+            if (el.classList.contains("hidden")) {
+                el.classList.replace("hidden", "visible")
             } else {
-                console.error(`Element drop_${user} not found!`);
-            }
-            if (!user_div) {
-                addUserBlock(user)
-                
-            
-            
+                el.classList.replace("visible", "hidden")
             }
 
-            let user7s = document.getElementById(`${user}_7s`)
-            user7s.innerText = USERS_DATA[user]["7"]
+        }
 
-            for (let resource of RESOURCES_LIST) {
-                let user_res_div = document.getElementById(user + "_" + resource)
-                let old_value = parseInt(user_res_div.innerText)
-                let n = parseInt(USERS_DATA[user][resource]);
-                user_res_div.innerText = n;
-                if (n == 0) {
-                    document.getElementById(user + "_" + resource).style.visibility = "hidden"
-                } else {
-                    document.getElementById(user + "_" + resource).style.visibility = "visible"
 
+
+        const element = document.getElementById(`drop_${user}`);
+        if (element) {
+            element.onclick = dropd;
+        } else {
+            console.error(`Element drop_${user} not found!`);
+        }
+        if (!user_div) {
+            addUserBlock(user)
+
+
+
+        }
+
+        let user7s = document.getElementById(`${user}_7s`)
+        user7s.innerText = USERS_DATA[user]["7"]
+
+        for (let resource of RESOURCES_LIST) {
+            let user_res_div = document.getElementById(user + "_" + resource)
+            let old_value = parseInt(user_res_div.innerText)
+            let n = parseInt(USERS_DATA[user][resource]);
+            user_res_div.innerText = n;
+            if (n == 0) {
+                document.getElementById(user + "_" + resource).style.visibility = "hidden"
+            } else {
+                document.getElementById(user + "_" + resource).style.visibility = "visible"
+
+            }
+            if (n != old_value) {
+                user_res_div.animate(
+                    [
+                        { transform: 'scale(1)' },
+                        { transform: 'scale(2)' },
+                        { transform: 'scale(2)' },
+                        { transform: 'scale(2)' },
+                        { transform: 'scale(1)' }
+                    ], {
+                    duration: 1000,
+                    iterations: 1
                 }
-                if (n != old_value) {
-                    user_res_div.animate(
-                        [
-                            { transform: 'scale(1)' },
-                            { transform: 'scale(2)' },
-                            { transform: 'scale(2)' },
-                            { transform: 'scale(2)' },
-                            { transform: 'scale(1)' }
-                        ], {
-                        duration: 1000,
-                        iterations: 1
-                    }
-                    );
-                }
+                );
             }
+        }
 
-        
-                document.getElementById(user + "_" + SETTLEMENT).innerText = MAX_INFRA[SETTLEMENT] - USERS_DATA[user][SETTLEMENT]
-                document.getElementById(user + "_road").innerText = MAX_INFRA[ROAD] - USERS_DATA[user][ROAD]
-                document.getElementById(user + "_city").innerText = MAX_INFRA[CITY] - USERS_DATA[user][CITY]
 
-            
-        
+        document.getElementById(user + "_" + SETTLEMENT).innerText = MAX_INFRA[SETTLEMENT] - USERS_DATA[user][SETTLEMENT]
+        document.getElementById(user + "_road").innerText = MAX_INFRA[ROAD] - USERS_DATA[user][ROAD]
+        document.getElementById(user + "_city").innerText = MAX_INFRA[CITY] - USERS_DATA[user][CITY]
+
+
+
 
     });
 
 
 
-        // Update cards
-        document.getElementById("card_count_knight").innerText = `${USED_DEV_CARDS[KNIGHT]}`;
-        document.getElementById("card_count_monopoly").innerText = `${USED_DEV_CARDS[MONOPOLY]}`;
-        document.getElementById("card_count_yearofplenty").innerText = `${USED_DEV_CARDS[PLENTY]}`;
-        document.getElementById("card_count_roadbuilding").innerText = `${USED_DEV_CARDS[ROAD2]}`;
-        document.getElementById("card_count_all").innerText = 25 - USED_DEV_CARDS["BOUGHT"];
+    // Update cards
+    document.getElementById("card_count_knight").innerText = `${USED_DEV_CARDS[KNIGHT]}`;
+    document.getElementById("card_count_monopoly").innerText = `${USED_DEV_CARDS[MONOPOLY]}`;
+    document.getElementById("card_count_yearofplenty").innerText = `${USED_DEV_CARDS[PLENTY]}`;
+    document.getElementById("card_count_roadbuilding").innerText = `${USED_DEV_CARDS[ROAD2]}`;
+    document.getElementById("card_count_all").innerText = 25 - USED_DEV_CARDS["BOUGHT"];
 
-        // Update dice stats
-        for (i = 2; i < 13; i++) {
-            let e = document.getElementById("dice_stat_bar_" + i)
-            if (DICE_STATS[i] == 0) {
-                e.style.display = "none";
-            }
-            else {
-                e.style.display = "block";
-            }
-            e.innerText = (DICE_STATS[i] == 0) ? "" : `    ${DICE_STATS[i]}`;
-            e.style.width = DICE_STATS[i] * 80 / DICE_STATS["max"] + "px"
+    // Update dice stats
+    for (i = 2; i < 13; i++) {
+        let e = document.getElementById("dice_stat_bar_" + i)
+        if (DICE_STATS[i] == 0) {
+            e.style.display = "none";
         }
-    
-}
+        else {
+            e.style.display = "block";
+        }
+        e.innerText = (DICE_STATS[i] == 0) ? "" : `    ${DICE_STATS[i]}`;
+        e.style.width = DICE_STATS[i] * 80 / DICE_STATS["max"] + "px"
+    }
 
+}
 
 function addInitialHtml() {
 
@@ -706,145 +704,142 @@ function addInitialHtml() {
             
         </div>`)
 
-//        <div class="config-button bactive" id="bully-msg">MSJ</div>
+    //        <div class="config-button bactive" id="bully-msg">MSJ</div>
 
 
-        const helpButtonsContainer = document.getElementById("help_buttons_section")
-        helpButtonsContainer.innerHTML +=  `<div class="config-button bactive" id="EXT">
+    const helpButtonsContainer = document.getElementById("help_buttons_section")
+    helpButtonsContainer.innerHTML += `<div class="config-button bactive" id="EXT">
         
       
 
         
         </div>`
-        
-        
-        const infBtncall = () => {
-            SHOW_INFRA = SHOW_INFRA ? false : true
-            let display = 'none'
-            if (SHOW_INFRA) {
-                display = 'flex'
-                document.getElementById("inf").classList.replace("binactive", "bactive")
-                document.getElementById("inf").innerText = "Hide available buildings"
-            } else {
-                
-                document.getElementById("inf").classList.replace("bactive", "binactive")
-                document.getElementById("inf").innerText = "Show available buildings"
-            }
-            document.querySelectorAll('.building').forEach(element => {
-                element.style.display = display;
-            });
-            
-            
-            updateChart()
-        };
-        
-        const statsBtncall = () => {
-            let el = document.getElementById(`stats-block-container`)
-            if (el.classList.contains("hidden")) {
-                el.classList.replace("hidden", "visible")
-                document.getElementById("stats").classList.replace("binactive", "bactive")
-                 document.getElementById("stats").innerText = "Hide game statistics"
-                } else {
-                    el.classList.replace("visible", "hidden")
-                    document.getElementById("stats").classList.replace("bactive", "binactive")
-                    document.getElementById("stats").innerText = "Show game statistics"
-            }
-            document.getElementById('stats-block-container').style.display = display;
-            updateChart()
-        };
-        
-        const resBtncall = () => {
-            SHOW_RES = SHOW_RES ? false : true
-            let display = 'none'
-            if (SHOW_RES) {
-                display = 'flex'
-                document.getElementById("inf-r").classList.replace("binactive", "bactive")
-                document.getElementById("inf-r").innerText = "Hide resources"
-            } else {
-                
-                document.getElementById("inf-r").classList.replace("bactive", "binactive")
-                document.getElementById("inf-r").innerText = "Show resources"
-            }
-            document.querySelectorAll('.resources').forEach(element => {
-                element.style.display = display;
-            });
-            
-            
-            updateChart()
-        };
-        
-        const sevBtncall = () => {
-            SHOW_7 = SHOW_7 ? false : true
-            let display = 'none'
-            if (SHOW_7) {
-                display = 'flex'
-                document.getElementById("inf-7").classList.replace("binactive", "bactive")
-                document.getElementById("inf-7").innerText = "Hide rolled 7s"
-            } else {
-                
-                document.getElementById("inf-7").classList.replace("bactive", "binactive")
-                document.getElementById("inf-7").innerText = "Show rolled 7s"
-            }
-            document.querySelectorAll('.sevens').forEach(element => {
-                element.style.display = display;
-            });
-            
-            
-            updateChart()
-        };
-
-        const allBtncall = () => {
-            let el = document.getElementById(`users-block-container`)
-            if (el.classList.contains("hidden")) {
-
-                el.classList.replace("hidden", "visible")
-                document.getElementById("all").classList.replace("binactive", "bactive")
-                document.getElementById("all").innerText = "Hide user data"
-            } else {
-                el.classList.replace("visible", "hidden")
-                document.getElementById("all").classList.replace("bactive", "binactive")
-                document.getElementById("all").innerText = "Show user data"
-            }
-        };
-
-        const switchMenu = () => {
-            let el = document.getElementById(`extensions-settings-container`)
-            let elm = document.getElementById(`extensions-settings-container-mid`)
-            let cv = document.getElementById(`game-canvas`)
 
 
+    const infBtncall = () => {
+        SHOW_INFRA = SHOW_INFRA ? false : true
+        let display = 'none'
+        if (SHOW_INFRA) {
+            display = 'flex'
+            document.getElementById("inf").classList.replace("binactive", "bactive")
+            document.getElementById("inf").innerText = "Hide available buildings"
+        } else {
 
-            let w = cv.style.width
-            let h = cv.style.height
-
-            elm.style.width = w
-            elm.style.height = h
-
-
-            if (el.classList.contains("hidden")) {
-                el.classList.replace("hidden", "visible")
-            } else {
-                el.classList.replace("visible", "hidden")
-            }
-        };
-
-        document.getElementById("extensions-settings-close").onclick = switchMenu
+            document.getElementById("inf").classList.replace("bactive", "binactive")
+            document.getElementById("inf").innerText = "Show available buildings"
+        }
+        document.querySelectorAll('.building').forEach(element => {
+            element.style.display = display;
+        });
 
 
-        document.getElementById("inf").onclick = infBtncall
-        document.getElementById("inf-r").onclick = resBtncall
-        document.getElementById("inf-7").onclick = sevBtncall
-        document.getElementById("stats").onclick = statsBtncall
-        document.getElementById("all").onclick = allBtncall
-       // document.getElementById("bully-msg").onclick = bully
-        document.getElementById("EXT").onclick = switchMenu
-        
-        
-        
-    }
+        updateChart()
+    };
+
+    const statsBtncall = () => {
+        let el = document.getElementById(`stats-block-container`)
+        if (el.classList.contains("hidden")) {
+            el.classList.replace("hidden", "visible")
+            document.getElementById("stats").classList.replace("binactive", "bactive")
+            document.getElementById("stats").innerText = "Hide game statistics"
+        } else {
+            el.classList.replace("visible", "hidden")
+            document.getElementById("stats").classList.replace("bactive", "binactive")
+            document.getElementById("stats").innerText = "Show game statistics"
+        }
+        document.getElementById('stats-block-container').style.display = display;
+        updateChart()
+    };
+
+    const resBtncall = () => {
+        SHOW_RES = SHOW_RES ? false : true
+        let display = 'none'
+        if (SHOW_RES) {
+            display = 'flex'
+            document.getElementById("inf-r").classList.replace("binactive", "bactive")
+            document.getElementById("inf-r").innerText = "Hide resources"
+        } else {
+
+            document.getElementById("inf-r").classList.replace("bactive", "binactive")
+            document.getElementById("inf-r").innerText = "Show resources"
+        }
+        document.querySelectorAll('.resources').forEach(element => {
+            element.style.display = display;
+        });
+
+
+        updateChart()
+    };
+
+    const sevBtncall = () => {
+        SHOW_7 = SHOW_7 ? false : true
+        let display = 'none'
+        if (SHOW_7) {
+            display = 'flex'
+            document.getElementById("inf-7").classList.replace("binactive", "bactive")
+            document.getElementById("inf-7").innerText = "Hide rolled 7s"
+        } else {
+
+            document.getElementById("inf-7").classList.replace("bactive", "binactive")
+            document.getElementById("inf-7").innerText = "Show rolled 7s"
+        }
+        document.querySelectorAll('.sevens').forEach(element => {
+            element.style.display = display;
+        });
+
+
+        updateChart()
+    };
+
+    const allBtncall = () => {
+        let el = document.getElementById(`users-block-container`)
+        if (el.classList.contains("hidden")) {
+
+            el.classList.replace("hidden", "visible")
+            document.getElementById("all").classList.replace("binactive", "bactive")
+            document.getElementById("all").innerText = "Hide user data"
+        } else {
+            el.classList.replace("visible", "hidden")
+            document.getElementById("all").classList.replace("bactive", "binactive")
+            document.getElementById("all").innerText = "Show user data"
+        }
+    };
+
+    const switchMenu = () => {
+        let el = document.getElementById(`extensions-settings-container`)
+        let elm = document.getElementById(`extensions-settings-container-mid`)
+        let cv = document.getElementById(`game-canvas`)
 
 
 
+        let w = cv.style.width
+        let h = cv.style.height
+
+        elm.style.width = w
+        elm.style.height = h
+
+
+        if (el.classList.contains("hidden")) {
+            el.classList.replace("hidden", "visible")
+        } else {
+            el.classList.replace("visible", "hidden")
+        }
+    };
+
+    document.getElementById("extensions-settings-close").onclick = switchMenu
+
+
+    document.getElementById("inf").onclick = infBtncall
+    document.getElementById("inf-r").onclick = resBtncall
+    document.getElementById("inf-7").onclick = sevBtncall
+    document.getElementById("stats").onclick = statsBtncall
+    document.getElementById("all").onclick = allBtncall
+    // document.getElementById("bully-msg").onclick = bully
+    document.getElementById("EXT").onclick = switchMenu
+
+
+
+}
 
 function addUserBlock(user) {
     let color = USERS_DATA[user]["color"]
@@ -901,7 +896,7 @@ function addUserBlock(user) {
                 </div>
 
             </div>
-            <div class="user-block-section sevens ${  SHOW_7 ? "visible" : "hidden"}">
+            <div class="user-block-section sevens ${SHOW_7 ? "visible" : "hidden"}">
 
                 <div class="user-block-counter-building">
                     <span >Rolled sevens: </span>
