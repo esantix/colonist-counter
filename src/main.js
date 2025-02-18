@@ -78,10 +78,40 @@ let GAME_ENDED = false;
 let CANVAS_MOVED = false;
 
 // Statistics
-let DICE_STATS = { 2: 0, 3: 0, 4: 0, 5: 0, 6: 0, 7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0, max: 0 }
-let USED_DEV_CARDS = { [KNIGHT]: 0, [MONOPOLY]: 0, [PLENTY]: 0, [ROAD2]: 0, [VP]: 0, "BOUGHT": 0 }
-let MAX_DEV_CARDS = { [KNIGHT]: 14, [MONOPOLY]: 2, [PLENTY]: 2, [ROAD2]: 2, [VP]: 5 }
-let MAX_INFRA = { [ROAD]: 15, [CITY]: 4, [SETTLEMENT]: 5 }
+let DICE_STATS = {
+    2: 0,
+    3: 0,
+    4: 0,
+    5: 0,
+    6: 0,
+    7: 0,
+    8: 0,
+    9: 0,
+    10: 0,
+    11: 0,
+    12: 0,
+    max: 0
+}
+let USED_DEV_CARDS = {
+    [KNIGHT]: 0,
+    [MONOPOLY]: 0,
+    [PLENTY]: 0,
+    [ROAD2]: 0,
+    [VP]: 0,
+    "BOUGHT": 0
+}
+let MAX_DEV_CARDS = {
+    [KNIGHT]: 14,
+    [MONOPOLY]: 2,
+    [PLENTY]: 2,
+    [ROAD2]: 2,
+    [VP]: 5
+}
+let MAX_INFRA = {
+    [ROAD]: 15,
+    [CITY]: 4,
+    [SETTLEMENT]: 5
+}
 
 // ------------------------   INITIALIZATION  ---------------------------------- //
 
@@ -110,7 +140,10 @@ function initOnLoad() {
         }
     });
 
-    LOG_LOADED_OBSERVER.observe(document.body, { childList: true, subtree: true });
+    LOG_LOADED_OBSERVER.observe(document.body, {
+        childList: true,
+        subtree: true
+    });
 }
 
 function hideElementsByClassList(classList) {
@@ -176,7 +209,7 @@ function startLogObserver() {
     clearAds()
     // Refresh data on changes on log element 
     const targetNode = document.getElementById(LOG_WRAPPER_ID);
-    const LOG_OBSERVER = new MutationObserver(function (mutationsList, observer) {
+    const LOG_OBSERVER = new MutationObserver(function(mutationsList, observer) {
 
         for (let mutation of mutationsList) {
             if (mutation.type === "childList") {
@@ -189,8 +222,7 @@ function startLogObserver() {
                         IS_OBSERVER_ACTIVE = false;
                         console.log(`%c Colonist Resource counter deactivated`, 'background: #222; color: #bada55')
 
-                    }
-                    else if (node.classList && node.classList[0] == "message-post") {
+                    } else if (node.classList && node.classList[0] == "message-post") {
 
                         // If last message
                         if (node.classList[1] == "victory-text") {
@@ -212,7 +244,11 @@ function startLogObserver() {
     });
 
 
-    LOG_OBSERVER.observe(targetNode, { attributes: true, childList: true, subtree: true });
+    LOG_OBSERVER.observe(targetNode, {
+        attributes: true,
+        childList: true,
+        subtree: true
+    });
     IS_OBSERVER_ACTIVE = true;
 }
 
@@ -281,8 +317,7 @@ function parseLogMsg(logHtmlElement) {
             let amount = parseInt(msgCtn[1].textContent.replace("stole", "").trim());
             operations.push([user, amount, resource, "MONOPOLY"]);
             PREVIOUS_IS_MONOPOLY = false;
-        }
-        else if (logHtmlElement.innerText.trim().startsWith("You stole")) {
+        } else if (logHtmlElement.innerText.trim().startsWith("You stole")) {
             let stolen = msgCtn[3].innerText;
             let resource = msgCtn[1].alt;
             operations.push([MY_USERNAME, +1, resource, "STOLE"]);
@@ -311,7 +346,7 @@ function parseLogMsg(logHtmlElement) {
                     break;
                 };
 
-                case "used": {// Uso de carta Monopoly. El siguiente mensaje muestra que se robó
+                case "used": { // Uso de carta Monopoly. El siguiente mensaje muestra que se robó
                     let used_card = msgCtn[2].innerText.trim();
                     if (used_card == MONOPOLY) {
                         PREVIOUS_IS_MONOPOLY = true;
@@ -340,7 +375,7 @@ function parseLogMsg(logHtmlElement) {
                     break;
                 };
 
-                case "discarded": {// Descarte por tener mas del limite en dado 7
+                case "discarded": { // Descarte por tener mas del limite en dado 7
                     for (let i = 2; i < msgCtn.length; i++) {
                         let resource = msgCtn[i].alt;
                         if (resource) {
@@ -355,8 +390,7 @@ function parseLogMsg(logHtmlElement) {
                     for (let i = 2; i < msgCtn.length; i++) {
                         if (msgCtn[i].textContent.trim() == "and took") {
                             op = +1;
-                        }
-                        else {
+                        } else {
                             let resource = msgCtn[i].alt;
                             if (resource) {
                                 operations.push([user, op, resource, "TRADE_BANK"]);
@@ -366,7 +400,7 @@ function parseLogMsg(logHtmlElement) {
                     break;
                 };
 
-                case "gave": {// Player trade
+                case "gave": { // Player trade
                     let l = parseInt(msgCtn.length) - 1;
                     let user2 = msgCtn[l].innerText;
 
@@ -387,7 +421,7 @@ function parseLogMsg(logHtmlElement) {
                     break;
                 };
 
-                case "bought": {// buy dev card
+                case "bought": { // buy dev card
                     let item = msgCtn[2].alt;
                     if (item == DEV_CARD) {
                         operations.push([user, -1, WOOL, "PURCHASE_CARD"]);
@@ -404,14 +438,12 @@ function parseLogMsg(logHtmlElement) {
                         USERS_DATA[user][ROAD] += 1
                         operations.push([user, -1, LUMBER, "PURCHASE_ROAD"]);
                         operations.push([user, -1, BRICK, "PURCHASE_ROAD"]);
-                    }
-                    else if (b_item == CITY) {
+                    } else if (b_item == CITY) {
                         USERS_DATA[user][CITY] += 1
                         USERS_DATA[user][SETTLEMENT] -= 1
                         operations.push([user, -2, GRAIN, "PURCHASE_CITY"]);
                         operations.push([user, -3, ORE, "PURCHASE_CITY"]);
-                    }
-                    else if (b_item == SETTLEMENT) {
+                    } else if (b_item == SETTLEMENT) {
                         USERS_DATA[user][SETTLEMENT] += 1
                         operations.push([user, -1, LUMBER, "PURCHASE_SETTLEMENT"]);
                         operations.push([user, -1, BRICK, "PURCHASE_SETTLEMENT"]);
@@ -425,8 +457,7 @@ function parseLogMsg(logHtmlElement) {
                     let b_item = msgCtn[2].alt;
                     if (b_item == ROAD) {
                         USERS_DATA[user][ROAD] += 1
-                    }
-                    else if (b_item == SETTLEMENT) {
+                    } else if (b_item == SETTLEMENT) {
                         USERS_DATA[user][SETTLEMENT] += 1
                     }
                     break;
@@ -437,8 +468,7 @@ function parseLogMsg(logHtmlElement) {
                     if (msgCtn.length == 4) { // stole you o You stol
                         operations.push([user, +1, resource, "STOLE"]);
                         operations.push([MY_USERNAME, -1, resource, "GOT_STOLEN"]);
-                    }
-                    else {
+                    } else {
                         let stoled = msgCtn[4].innerText;
                         operations.push([user, +1, resource, "STOLE"]);
                         operations.push([stoled, -1, resource, "STOLEN"]);
@@ -448,8 +478,7 @@ function parseLogMsg(logHtmlElement) {
             }
         }
 
-    } catch (e) {
-    }
+    } catch (e) {}
 
     return operations;
 }
@@ -473,8 +502,7 @@ function execute_ops(operations) {
             }
 
             DICE_STATS["max"] = Math.max(...Object.values(DICE_STATS))
-        }
-        else {
+        } else {
             //console.log(actions[j])
 
 
@@ -487,7 +515,9 @@ function execute_ops(operations) {
 
             if (flag == "MONOPOLY") {
                 for (let player in USERS_DATA) {
-                    if (player != user) { USERS_DATA[player][resource] = 0; }
+                    if (player != user) {
+                        USERS_DATA[player][resource] = 0;
+                    }
                 }
             }
 
@@ -504,8 +534,7 @@ function log_action(action) {
 
     if (flag == "DICE_DATA") {
         console.log(`%c Turn ${TURNS}): ${user} rolled ${action[1] + action[2]}`, 'background: #222; color: #bada55')
-    }
-    else {
+    } else {
         let color = USER_COLORMAP[user]
         if (user == MY_USERNAME) {
             // color = "white"
@@ -570,16 +599,25 @@ function updateChart() {
             }
             if (n != old_value) {
                 user_res_div.animate(
-                    [
-                        { transform: 'scale(1)' },
-                        { transform: 'scale(2)' },
-                        { transform: 'scale(2)' },
-                        { transform: 'scale(2)' },
-                        { transform: 'scale(1)' }
+                    [{
+                            transform: 'scale(1)'
+                        },
+                        {
+                            transform: 'scale(2)'
+                        },
+                        {
+                            transform: 'scale(2)'
+                        },
+                        {
+                            transform: 'scale(2)'
+                        },
+                        {
+                            transform: 'scale(1)'
+                        }
                     ], {
-                    duration: 1000,
-                    iterations: 1
-                }
+                        duration: 1000,
+                        iterations: 1
+                    }
                 );
             }
         }
@@ -608,8 +646,7 @@ function updateChart() {
         let e = document.getElementById("dice_stat_bar_" + i)
         if (DICE_STATS[i] == 0) {
             e.style.display = "none";
-        }
-        else {
+        } else {
             e.style.display = "block";
         }
         e.innerText = (DICE_STATS[i] == 0) ? "" : `    ${DICE_STATS[i]}`;
@@ -907,5 +944,3 @@ function addUserBlock(user) {
             </div>
         </div>`;
 }
-
-
