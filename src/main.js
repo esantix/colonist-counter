@@ -218,22 +218,26 @@ function startLogObserver() {
 }
 
 
+// ------------------------  OPERATIONAL FUNCTIONS  ---------------------------------- //
+
+
 function bully() {
     document.getElementById("game-chat-input").value = resourcesChatMsg()
     //document.getElementById("game-chat-form").submit();
 }
-
-// ------------------------  OPERATIONAL FUNCTIONS  ---------------------------------- //
-
 
 function resourcesChatMsg() {
     let msg = ""
     Object.keys(USERS_DATA).forEach((user) => {
 
         if (user != MY_USERNAME) {
+
+            let el = document.getElementById(`dataholder_${user}`)
+        if (el.classList.contains("visible")) {
             msg += `${user} has ${"lumber ".repeat(USERS_DATA[user]["lumber"])}  ${"brick ".repeat(USERS_DATA[user]["brick"])}  ${"wool ".repeat(USERS_DATA[user]["wool"])}  ${"grain ".repeat(USERS_DATA[user]["grain"])}  ${"ore ".repeat(USERS_DATA[user]["ore"])}| `
             // msg += `${user} has ${USERS_DATA[user]["lumber"]} lumber ${USERS_DATA[user]["brick"]} brick ${USERS_DATA[user]["wool"]} wool ${USERS_DATA[user]["grain"]} grain  ${USERS_DATA[user]["ore"]} ore | `
         }
+    }
     })
     return msg
 }
@@ -518,10 +522,6 @@ function log_action(action) {
 
 function updateChart() {
 
-
-    
-    
-    
     document.getElementById("game-chat-input").value = ""
     
     // Update Resources
