@@ -30,6 +30,7 @@ const DEV_LIST = [KNIGHT, MONOPOLY, PLENTY, ROAD2];
 
 // Scrapping variables
 const LOG_WRAPPER_ID = "game-log-text" // Class Id of log wrapper
+
 const CARD_ICON = {
     [LUMBER]: "/dist/images/card_lumber.svg",
     [BRICK]: "/dist/images/card_brick.svg",
@@ -45,7 +46,7 @@ const CARD_ICON = {
     [VP]: "/dist/images/card_vp.svg"
 };
 
-
+// reverse color mapping
 const COLOR_CODE = {
     "rgb(226, 113, 116)": "red",
     "rgb(34, 54, 151)": "blue",
@@ -181,9 +182,7 @@ function startLogObserver() {
             if (mutation.type === "childList") {
                 mutation.addedNodes.forEach(node => {
 
-                    if (!CANVAS_MOVED) {
-                        // moveCanvas()
-                    }
+
 
                     if (GAME_ENDED) {
                         LOG_OBSERVER.disconnect()
@@ -544,7 +543,6 @@ function updateChart() {
         
         
             const element = document.getElementById(`drop_${user}`);
-            console.log("Element found:", element);
             if (element) {
                 element.onclick = dropd;
             } else {
@@ -621,166 +619,74 @@ function updateChart() {
     }
 }
 
-function moveCanvas() {
-
-    try {
-
-        document.getElementById("game-canvas").classList.add("to_right");;
-
-        document.querySelectorAll('.main_block').forEach(element => {
-            element.classList.add("to_right");
-        });
-        document.getElementById("upper-left-container").classList.add("help_tf")
-        CANVAS_MOVED = true;
-    } catch (e) { }
-}
-
 
 function addInitialHtml() {
 
 
     let htmlStringLeft = `
         <div class="main-extention-container left">
-
-            <div class="config-container">
-                <button class="config-button bactive" id="inf-r">RESOURCES</button>
-                <button class="config-button bactive" id="inf-7">SEVENS</button>
-            </div>
-            
-            <div class="config-container">
-                <button class="config-button bactive" id="inf">BUILDINGS</button>
-                <button class="config-button bactive" id="stats">STATISTICS</button>
-            </div>
-                
-
- 
-
-
             <div class="blocks-container" id="users-block-container">
-                
-              
-            </div>
-
-            
-
         </div>`
+
+
+    let diceBlock = '<div class="block-sub-hr">Dice stats</div>';
+    for (let n = 2; n <= 12; n++) {
+        diceBlock += `<div class="block-data-container">
+            <span class="dice-span">${n}</span>
+            <div class="dice-bar" id="dice_stat_bar_${n}"></div>
+        </div>`;
+    }
 
 
     let htmlStringRight = `
         <div class="main-extention-container right">
-
-
-         
-
-        
             <div class="blocks-container stats" id="stats-block-container">
 
                 <div class="block stats-block">
 
-
                     <div class="block-sub-hr"> Played cards</div>
-
-                                      <div class="devctn">
-
-                                <div class="block-data-container dev">
-                                    <img src="/dist/images/card_knight.svg" alt="">
-                                    <span id="card_count_knight" >0</span>
-                                </div>
-                                <div class="block-data-container dev">
-                                    <img src="/dist/images/card_monopoly.svg" alt="">
-                                    <span id="card_count_monopoly" >0/2</span>
-                                </div>
-                                <div class="block-data-container dev">
-                                    <img src="/dist/images/card_yearofplenty.svg" alt="">
-                                    <span id="card_count_yearofplenty" >0</span>
+                    <div class="devctn">
+                        <div class="block-data-container dev">
+                            <img src="/dist/images/card_knight.svg" alt="">
+                            <span id="card_count_knight" >0</span>
+                        </div>
+                        <div class="block-data-container dev">
+                            <img src="/dist/images/card_monopoly.svg" alt="">
+                            <span id="card_count_monopoly" >0/2</span>
+                        </div>
+                        <div class="block-data-container dev">
+                            <img src="/dist/images/card_yearofplenty.svg" alt="">
+                            <span id="card_count_yearofplenty" >0</span>
+                        </div>
+                        <div class="block-data-container dev">
+                            <img src="/dist/images/card_roadbuilding.svg" alt="">
+                            <span id="card_count_roadbuilding" >0</span>
+                        </div>
                     </div>
-                                <div class="block-data-container dev">
-                                    <img src="/dist/images/card_roadbuilding.svg" alt="">
-                                    <span id="card_count_roadbuilding" >0</span>
-                                </div>
-                      </div>
+
                     <div class="block-sub-hr"> Cards in bank</div>
-                    
                     <div class="block-data-container">
                         <img src="/dist/images/card_devcardback.svg" alt="">
                         <span id="card_count_all" >25</span>
                     </div>
-        
-                    <div class="block-sub-hr">Dice stats</div>
-
-                    <div class="block-data-container">
-                        <span class="dice-span">2</span>
-                        <div class="dice-bar" id="dice_stat_bar_2"></div>
-                    </div>
-                
-                    <div class="block-data-container">
-                        <span class="dice-span">3</span>
-                        <div class="dice-bar" id="dice_stat_bar_3"></div>
-                    </div>
-                
-                    <div class="block-data-container">
-                        <span class="dice-span">4</span>
-                        <div class="dice-bar" id="dice_stat_bar_4"></div>
-                    </div>
-                
-                    <div class="block-data-container">
-                        <span class="dice-span">5</span>
-                        <div class="dice-bar" id="dice_stat_bar_5"></div>
-                    </div>
-                
-                    <div class="block-data-container">
-                        <span class="dice-span">6</span>
-                        <div class="dice-bar" id="dice_stat_bar_6"></div>
-                    </div>
-                
-                    <div class="block-data-container">
-                        <span class="dice-span">7</span>
-                        <div class="dice-bar" id="dice_stat_bar_7"></div>
-                    </div>
-                
-                    <div class="block-data-container">
-                        <span class="dice-span">8</span>
-                        <div class="dice-bar" id="dice_stat_bar_8"></div>
-                    </div>
-                
-                    <div class="block-data-container">
-                        <span class="dice-span">9</span>
-                        <div class="dice-bar" id="dice_stat_bar_9"></div>
-                    </div>
-                
-                    <div class="block-data-container">
-                        <span class="dice-span">10</span>
-                        <div class="dice-bar" id="dice_stat_bar_10"></div>
-                    </div>
-                
-                    <div class="block-data-container">
-                        <span class="dice-span">11</span>
-                        <div class="dice-bar" id="dice_stat_bar_11"></div>
-                    </div>
-                
-                    <div class="block-data-container">
-                        <span class="dice-span">12</span>
-                        <div class="dice-bar" id="dice_stat_bar_12"></div>
-                    </div>
+            
+                    
+                    ${diceBlock}
                 </div>
             </div>
-
-    
-
-
-
-
-
-        </div>`
+         </div>`
 
 
     document.body.insertAdjacentHTML('afterbegin', htmlStringLeft)
     document.body.insertAdjacentHTML('afterbegin', htmlStringRight)
 
-    document.getElementById("game-chat-form").insertAdjacentHTML('beforebegin', ` <div class="config-button msg" id="bully-msg">R</div>`)
-
+    const helpButtonsContainer = document.getElementById("help_buttons_section")
+    helpButtonsContainer.innerHTML += `<button class="config-button bactive" id="stats">ST</button>`
+    helpButtonsContainer.innerHTML += `<button class="config-button bactive" id="inf-r">RS</button>`
+    helpButtonsContainer.innerHTML += `<button class="config-button bactive" id="inf-7">7</button>`
+    helpButtonsContainer.innerHTML += `<button class="config-button bactive" id="inf">BD</button>`
+    helpButtonsContainer.innerHTML += `<button class="config-button bactive" id="bully-msg">MSJ</button>`
     
-
     const infBtncall = () => {
         SHOW_INFRA = SHOW_INFRA ? false : true
         let display = 'none'
@@ -798,9 +704,6 @@ function addInitialHtml() {
 
         updateChart()
     };
-
-
-
 
     const statsBtncall = () => {
         SHOW_STATS = SHOW_STATS ? false : true
@@ -834,7 +737,6 @@ function addInitialHtml() {
         updateChart()
     };
 
-
     const sevBtncall = () => {
         SHOW_7 = SHOW_7 ? false : true
         let display = 'none'
@@ -860,10 +762,6 @@ function addInitialHtml() {
     document.getElementById("bully-msg").onclick = bully
 
 }
-
-
-
-
 
 function addUserBlock(user) {
     let color = USERS_DATA[user]["color"]
@@ -903,6 +801,7 @@ function addUserBlock(user) {
                     <img src="/dist/images/card_ore.svg">
                 </div>
 
+   
             </div> <div class="user-block-section building">
 
                 <div class="user-block-counter-building">
@@ -929,7 +828,4 @@ function addUserBlock(user) {
             </div>
             </div>
         </div>`;
-
-
- 
 }
