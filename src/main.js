@@ -627,12 +627,7 @@ function updateChart() {
         document.getElementById(user + "_road").innerText = MAX_INFRA[ROAD] - USERS_DATA[user][ROAD]
         document.getElementById(user + "_city").innerText = MAX_INFRA[CITY] - USERS_DATA[user][CITY]
 
-
-
-
     });
-
-
 
     // Update cards
     document.getElementById("card_count_knight").innerText = `${USED_DEV_CARDS[KNIGHT]}`;
@@ -655,8 +650,34 @@ function updateChart() {
 
 }
 
+function hiderButtonFuntion(buttonId, selector){
+    const func = ()  => {
+        console.log("Running for " + buttonId + " selector " + selector)
+        let button = document.getElementById(buttonId)
+        document.querySelectorAll(selector).forEach(element => {
+            if (element.classList.contains("hidden")) {
+                element.classList.replace("hidden", "visible")
+                button.classList.replace("binactive", "bactive")
+                button.innerText.replace("Show","Hide")
+            } else if (element.classList.contains("visible")) {
+                element.classList.replace("visible", "hidden")
+                button.classList.replace("bactive", "binactive")
+                button.innerText.replace("Hide","Show")
+            } else {
+                element.classList.add("hidden")
+                button.classList.replace("bactive", "binactive")
+                button.innerText.replace("Hide","Show")
+
+            }
+        });
+    }
+    return func;
+
+}
+
 function addInitialHtml() {
 
+    // Big strings build
     let diceBlock = '<div class="block-sub-hr">Dice stats</div>';
     for (let n = 2; n <= 12; n++) {
         diceBlock += `<div class="block-data-container">
@@ -664,15 +685,12 @@ function addInitialHtml() {
             <div class="dice-bar" id="dice_stat_bar_${n}"></div>
         </div>`;
     }
+
     let htmlStringLeft = `
         <div class="main-extention-container left">
             <div class="blocks-container hidden" id="users-block-container">
         </div>`
-    document.body.insertAdjacentHTML('afterbegin', htmlStringLeft)
-
-
-
-
+   
     let htmlStringRight = `
         <div class="main-extention-container right">
             <div class="blocks-container stats hidden" id="stats-block-container">
@@ -710,12 +728,8 @@ function addInitialHtml() {
                 </div>
             </div>
          </div>`
-    document.body.insertAdjacentHTML('afterbegin', htmlStringRight)
 
-
-
-
-    document.body.insertAdjacentHTML('afterbegin', ` 
+    let htmlMenuString = ` 
         
         <div class="extensions-settings-container hidden" id="extensions-settings-container"> 
         <div class="extensions-settings-container-mid" id="extensions-settings-container-mid" > 
@@ -739,114 +753,20 @@ function addInitialHtml() {
 
         </div>
             
-        </div>`)
-
-    //        <div class="config-button bactive" id="bully-msg">MSJ</div>
-
-
-    const helpButtonsContainer = document.getElementById("help_buttons_section")
-    helpButtonsContainer.innerHTML += `<div class="config-button bactive" id="EXT">
-        
-      
-
-        
         </div>`
+   
+    // String additions
+    document.body.insertAdjacentHTML('afterbegin', htmlStringLeft)
+    document.body.insertAdjacentHTML('afterbegin', htmlStringRight)
+    document.body.insertAdjacentHTML('afterbegin', htmlMenuString)
+    document.getElementById("help_buttons_section").innerHTML += `<div class="config-button bactive" id="EXT"> </div>`
 
 
-    const infBtncall = () => {
-        SHOW_INFRA = SHOW_INFRA ? false : true
-        let display = 'none'
-        if (SHOW_INFRA) {
-            display = 'flex'
-            document.getElementById("inf").classList.replace("binactive", "bactive")
-            document.getElementById("inf").innerText = "Hide available buildings"
-        } else {
-
-            document.getElementById("inf").classList.replace("bactive", "binactive")
-            document.getElementById("inf").innerText = "Show available buildings"
-        }
-        document.querySelectorAll('.building').forEach(element => {
-            element.style.display = display;
-        });
-
-
-        updateChart()
-    };
-
-    const statsBtncall = () => {
-        let el = document.getElementById(`stats-block-container`)
-        if (el.classList.contains("hidden")) {
-            el.classList.replace("hidden", "visible")
-            document.getElementById("stats").classList.replace("binactive", "bactive")
-            document.getElementById("stats").innerText = "Hide game statistics"
-        } else {
-            el.classList.replace("visible", "hidden")
-            document.getElementById("stats").classList.replace("bactive", "binactive")
-            document.getElementById("stats").innerText = "Show game statistics"
-        }
-        document.getElementById('stats-block-container').style.display = display;
-        updateChart()
-    };
-
-    const resBtncall = () => {
-        SHOW_RES = SHOW_RES ? false : true
-        let display = 'none'
-        if (SHOW_RES) {
-            display = 'flex'
-            document.getElementById("inf-r").classList.replace("binactive", "bactive")
-            document.getElementById("inf-r").innerText = "Hide resources"
-        } else {
-
-            document.getElementById("inf-r").classList.replace("bactive", "binactive")
-            document.getElementById("inf-r").innerText = "Show resources"
-        }
-        document.querySelectorAll('.resources').forEach(element => {
-            element.style.display = display;
-        });
-
-
-        updateChart()
-    };
-
-    const sevBtncall = () => {
-        SHOW_7 = SHOW_7 ? false : true
-        let display = 'none'
-        if (SHOW_7) {
-            display = 'flex'
-            document.getElementById("inf-7").classList.replace("binactive", "bactive")
-            document.getElementById("inf-7").innerText = "Hide rolled 7s"
-        } else {
-
-            document.getElementById("inf-7").classList.replace("bactive", "binactive")
-            document.getElementById("inf-7").innerText = "Show rolled 7s"
-        }
-        document.querySelectorAll('.sevens').forEach(element => {
-            element.style.display = display;
-        });
-
-
-        updateChart()
-    };
-
-    const allBtncall = () => {
-        let el = document.getElementById(`users-block-container`)
-        if (el.classList.contains("hidden")) {
-
-            el.classList.replace("hidden", "visible")
-            document.getElementById("all").classList.replace("binactive", "bactive")
-            document.getElementById("all").innerText = "Hide user data"
-        } else {
-            el.classList.replace("visible", "hidden")
-            document.getElementById("all").classList.replace("bactive", "binactive")
-            document.getElementById("all").innerText = "Show user data"
-        }
-    };
-
+    // Functionalities attachment
     const switchMenu = () => {
         let el = document.getElementById(`extensions-settings-container`)
         let elm = document.getElementById(`extensions-settings-container-mid`)
         let cv = document.getElementById(`game-canvas`)
-
 
 
         let w = cv.style.width
@@ -865,16 +785,14 @@ function addInitialHtml() {
 
     document.getElementById("extensions-settings-close").onclick = switchMenu
 
+    document.getElementById("inf").onclick = hiderButtonFuntion("stats", '.user-block-section.building')
+    document.getElementById("inf-r").onclick = hiderButtonFuntion("stats", ".stats-block-container.resources")
+    document.getElementById("inf-7").onclick = hiderButtonFuntion("inf-7", ".stats-block-container.sevens")
 
-    document.getElementById("inf").onclick = infBtncall
-    document.getElementById("inf-r").onclick = resBtncall
-    document.getElementById("inf-7").onclick = sevBtncall
-    document.getElementById("stats").onclick = statsBtncall
-    document.getElementById("all").onclick = allBtncall
+    document.getElementById("stats").onclick = hiderButtonFuntion("stats", "#stats-block-container")
+    document.getElementById("all").onclick = hiderButtonFuntion("all", "#users-block-container")
     // document.getElementById("bully-msg").onclick = bully
     document.getElementById("EXT").onclick = switchMenu
-
-
 
 }
 
@@ -933,7 +851,7 @@ function addUserBlock(user) {
                 </div>
 
             </div>
-            <div class="user-block-section sevens ${SHOW_7 ? "visible" : "hidden"}">
+            <div class="user-block-section sevens">
 
                 <div class="user-block-counter-building">
                     <span >Rolled sevens: </span>
