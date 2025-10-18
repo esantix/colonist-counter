@@ -29,22 +29,28 @@ const RESOURCES_LIST = [LUMBER, BRICK, WOOL, GRAIN, ORE];
 const DEV_LIST = [KNIGHT, MONOPOLY, PLENTY, ROAD2];
 
 // Scrapping variables
-const LOG_WRAPPER_ID = "game-log-text" // Class Id of log wrapper
+const LOG_WRAPPER_CLASS = "gameFeedsContainer" // Class Id of log wrapper
 
 const CARD_ICON = {
-    [LUMBER]: "/dist/images/card_lumber.svg",
-    [BRICK]: "/dist/images/card_brick.svg",
-    [GRAIN]: "/dist/images/card_grain.svg",
-    [WOOL]: "/dist/images/card_wool.svg",
-    [ORE]: "/dist/images/card_ore.svg",
-    [UNKNOWN_CARD]: "/dist/images/card_rescardback.svg",
-    [DEV_CARD]: "/dist/images/card_devcardback.svg",
-    [KNIGHT]: "/dist/images/card_knight.svg",
-    [MONOPOLY]: "/dist/images/card_monopoly.svg",
-    [PLENTY]: "/dist/images/card_yearofplenty.svg",
-    [ROAD2]: "/dist/images/card_roadbuilding.svg",
-    [VP]: "/dist/images/card_vp.svg"
+    [LUMBER]: "/dist/assets/card_lumber.cf22f8083cf89c2a29e7.svg",
+    [BRICK]: "/dist/assets/card_brick.5950ea07a7ea01bc54a5.svg",
+    [GRAIN]: "/dist/assets/card_grain.09c9d82146a64bce69b5.svg",
+    [WOOL]: "/dist/assets/card_wool.17a6dea8d559949f0ccc.svg",
+    [ORE]: "/dist/assets/card_ore.117f64dab28e1c987958.svg",
+    [UNKNOWN_CARD]: "/dist/assets/card_devcardback.92569a1abd04a8c1c17e.svg",
+    [DEV_CARD]: "/dist/assets/card_devcardback.92569a1abd04a8c1c17e.svg",
+    [KNIGHT]: "/dist/assets/card_knight.a58573f2154fa93a6319.svg",
+    [MONOPOLY]: "/dist/assets/card_devcardback.92569a1abd04a8c1c17e.svg",
+    [PLENTY]: "/dist/assets/card_devcardback.92569a1abd04a8c1c17e.svg",
+    [ROAD2]: "/dist/assets/card_devcardback.92569a1abd04a8c1c17e.svg",
+    [VP]: "/dist/assets/card_devcardback.92569a1abd04a8c1c17e.svg"
 };
+
+const ICONS_EXTRA = {
+    [ROAD] : "/dist/assets/road_blue.3301e2eed15cae5a6a05.svg",
+    [SETTLEMENT] : "/dist/assets/settlement_blue.bad4cdb43d65c329deda.svg",
+    [CITY] : "/dist/assets/city_blue.43d846e83515f35f51f6.svg"
+}
 
 // reverse color mapping
 const COLOR_CODE = {
@@ -113,6 +119,10 @@ let MAX_INFRA = {
     [SETTLEMENT]: 5
 }
 
+let PROCSSED_LOGS = [
+
+]
+
 // ------------------------   INITIALIZATION  ---------------------------------- //
 
 initOnLoad();
@@ -122,18 +132,22 @@ setInterval(() => {
 }, 4000);
 
 // ------------------------   INITIALIZATION FUNCTIONS  ---------------------------------- //
-
+//LOG_WRAPPER_CLASS
 function initOnLoad() {
     // Detect load of logs wrapper for initialization 
     const LOG_LOADED_OBSERVER = new MutationObserver((mutationsList) => {
+
         for (let mutation of mutationsList) {
             if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
                 for (let node of mutation.addedNodes) {
-                    if (node.nodeType === 1 && node.id === LOG_WRAPPER_ID) {
-                        console.clear()
-                        init()
-                        LOG_LOADED_OBSERVER.disconnect();
-                        break;
+                    if (node.className){
+
+                        if (node.nodeType === 1 && node.className.includes('lobby-chat-text-icon') ) {
+                            //console.clear()
+                            init()
+                            LOG_LOADED_OBSERVER.disconnect();
+                            break;
+                        }
                     }
                 }
             }
@@ -159,7 +173,6 @@ function hideElementsByClassList(classList) {
 }
 
 function clearAds() {
-    console.log("Clear ads")
     let ads_class_list = [
         "in_game_ab_left",
         "in_game_ab_right",
@@ -194,7 +207,7 @@ function init() {
 function resume() {
     console.log("Resume started log")
     clearAds()
-    const targetNode = document.getElementById(LOG_WRAPPER_ID);
+    const targetNode = document.querySelector('[class*="gameFeedsContainer"]');
 
     for (let node of targetNode.childNodes) {
         let operations = parseLogMsg(node)
@@ -208,22 +221,22 @@ function resume() {
 function startLogObserver() {
     clearAds()
     // Refresh data on changes on log element 
-    const targetNode = document.getElementById(LOG_WRAPPER_ID);
+
     const LOG_OBSERVER = new MutationObserver(function(mutationsList, observer) {
 
         for (let mutation of mutationsList) {
             if (mutation.type === "childList") {
                 mutation.addedNodes.forEach(node => {
-
-
-
+                    
+                    
+                    
+                    
                     if (GAME_ENDED) {
                         LOG_OBSERVER.disconnect()
                         IS_OBSERVER_ACTIVE = false;
                         console.log(`%c Colonist Resource counter deactivated`, 'background: #222; color: #bada55')
 
-                    } else if (node.classList && node.classList[0] == "message-post") {
-
+                    } else if (node.classList && node.classList[0]) {
                         // If last message
                         if (node.classList[1] == "victory-text") {
                             GAME_ENDED = true;
@@ -232,6 +245,7 @@ function startLogObserver() {
 
                         let operations = parseLogMsg(node)
                         if (operations.length > 0) {
+           
                             execute_ops(operations)
                         }
                         updateChart()
@@ -243,7 +257,8 @@ function startLogObserver() {
         }
     });
 
-
+    let element = document.querySelector('[class*="gameFeedsContainer"]');
+    const targetNode = element;
     LOG_OBSERVER.observe(targetNode, {
         attributes: true,
         childList: true,
@@ -257,7 +272,7 @@ function startLogObserver() {
 
 
 function bully() {
-    document.getElementById("game-chat-input").value = resourcesChatMsg()
+    //document.getElementById("game-chat-input").value = resourcesChatMsg()
     //document.getElementById("game-chat-form").submit();
 }
 
@@ -278,15 +293,40 @@ function resourcesChatMsg() {
 }
 
 function parseLogMsg(logHtmlElement) {
+    
+    let dataindex = logHtmlElement.getAttribute("data-index")
+    if (PROCSSED_LOGS.includes(dataindex)) {
+        return []
+    } else {
+        PROCSSED_LOGS.push(dataindex)
+    }
     // Parses html message into a list of operations
     // Return list of [user, amount_to_add, resource, flag]
     clearAds()
+    try {
+        if (!logHtmlElement.children[0].children[1]) {
+            return [];
+        }
+    }
+    catch (e) {
+        return [];
+    }
     var operations = [];
     try {
 
-        let msgCtn = logHtmlElement.childNodes[1].childNodes;
-        var user = logHtmlElement.children[1].children[0].innerText.trim(); // no funciona para You Stole
-        let color = logHtmlElement.children[1].children[0].style.color // Solo al existir log puedo scrappear color de usuario
+        let msgCtn = logHtmlElement.children[0].children[1]
+
+        try {
+            var user = msgCtn.children[0].innerText.trim(); // no funciona para You Stole
+        }
+        catch (e) {     
+            var user = "";
+        }
+
+
+        let color = msgCtn.children[0].style.color // Solo al existir log puedo scrappear color de usuario
+        USER_COLORMAP[user] = color;
+
         if (user) {
             if (!(user in USERS_DATA)) {
                 USERS_DATA[user] = {
@@ -305,11 +345,10 @@ function parseLogMsg(logHtmlElement) {
             }
         }
 
+        msgCtn = msgCtn.childNodes
 
-        USER_COLORMAP[user] = color;
 
-
-        USER_ICON[user] = logHtmlElement.children[0].src
+        //USER_ICON[user] = logHtmlElement.children[0].src
 
         // Si el mensaje anterior es que suó monopoly
         if (PREVIOUS_IS_MONOPOLY) {
@@ -325,12 +364,13 @@ function parseLogMsg(logHtmlElement) {
 
         } else {
             let action = msgCtn[1].textContent.trim(); // Accion
-            // print(action)
+            //console.log("Action:" + action)
             switch (action) {
                 case "rolled": {
                     TURNS += 1;
-                    let d1 = parseInt(msgCtn[2].alt.slice(-1));
-                    let d2 = parseInt(msgCtn[4].alt.slice(-1));
+
+                    let d1 = parseInt(msgCtn[2].alt.split("_")[1]);
+                    let d2 = parseInt(msgCtn[4].alt.split("_")[1]);
                     operations.push([user, d1, d2, "DICE_DATA"]);
                     break;
                 };
@@ -421,45 +461,38 @@ function parseLogMsg(logHtmlElement) {
                     break;
                 };
 
-                case "bought": { // buy dev card
-                    let item = msgCtn[2].alt;
-                    if (item == DEV_CARD) {
-                        operations.push([user, -1, WOOL, "PURCHASE_CARD"]);
-                        operations.push([user, -1, GRAIN, "PURCHASE_CARD"]);
-                        operations.push([user, -1, ORE, "PURCHASE_CARD"]);
-                    }
-                    USED_DEV_CARDS["BOUGHT"] += 1;
-                    break;
-                };
 
-                case "built a": { // Build building
-                    let b_item = msgCtn[2].alt;
-                    if (b_item == ROAD) {
+
+                case "built a Road": { // Build building
+        
                         USERS_DATA[user][ROAD] += 1
                         operations.push([user, -1, LUMBER, "PURCHASE_ROAD"]);
                         operations.push([user, -1, BRICK, "PURCHASE_ROAD"]);
-                    } else if (b_item == CITY) {
+                        break;
+                };
+                case "built a City": {
                         USERS_DATA[user][CITY] += 1
                         USERS_DATA[user][SETTLEMENT] -= 1
                         operations.push([user, -2, GRAIN, "PURCHASE_CITY"]);
-                        operations.push([user, -3, ORE, "PURCHASE_CITY"]);
-                    } else if (b_item == SETTLEMENT) {
+                        operations.push([user, -3, ORE, "PURCHASE_CITY"]); 
+                        break;
+                };
+                case "built a Settlement": {
                         USERS_DATA[user][SETTLEMENT] += 1
                         operations.push([user, -1, LUMBER, "PURCHASE_SETTLEMENT"]);
                         operations.push([user, -1, BRICK, "PURCHASE_SETTLEMENT"]);
                         operations.push([user, -1, WOOL, "PURCHASE_SETTLEMENT"]);
                         operations.push([user, -1, GRAIN, "PURCHASE_SETTLEMENT"]);
-                    }
+                        break;
+                };
+
+                case "placed a Road": { // Initial free
+                    USERS_DATA[user][ROAD] += 1
                     break;
                 };
 
-                case "placed a": { // Initial free
-                    let b_item = msgCtn[2].alt;
-                    if (b_item == ROAD) {
-                        USERS_DATA[user][ROAD] += 1
-                    } else if (b_item == SETTLEMENT) {
-                        USERS_DATA[user][SETTLEMENT] += 1
-                    }
+                case "placed a Settlement": { // Initial free
+                    USERS_DATA[user][SETTLEMENT] += 1
                     break;
                 };
 
@@ -478,7 +511,7 @@ function parseLogMsg(logHtmlElement) {
             }
         }
 
-    } catch (e) {}
+   } catch (e) {}
 
     return operations;
 }
@@ -507,8 +540,9 @@ function execute_ops(operations) {
 
 
             let user = action[0]; // Who to modify resources to
-            let amount = action[1]; // number of resource to add 
-            let resource = action[2]; //
+            let amount = parseInt(action[1]); // number of resource to add 
+            let resource = action[2].toLowerCase(); //
+
 
 
             USERS_DATA[user][resource] += amount;
@@ -523,6 +557,7 @@ function execute_ops(operations) {
 
         }
     }
+   // console.log(USERS_DATA)
 }
 
 function log_action(action) {
@@ -549,7 +584,7 @@ function log_action(action) {
 
 function updateChart() {
 
-    document.getElementById("game-chat-input").value = ""
+    //document.getElementById("game-chat-input").value = ""
 
     // Update Resources
     Object.keys(USERS_DATA).forEach((user) => {
@@ -557,7 +592,7 @@ function updateChart() {
         let user_div = document.getElementById("userdiv_" + user)
 
 
-
+        //console.log("Updating user: " + user)
         const dropd = () => {
             let el = document.getElementById(`dataholder_${user}`)
             if (el.classList.contains("hidden")) {
@@ -574,7 +609,7 @@ function updateChart() {
         if (element) {
             element.onclick = dropd;
         } else {
-            console.error(`Element drop_${user} not found!`);
+            //console.error(`Element drop_${user} not found!`);
         }
         if (!user_div) {
             addUserBlock(user)
@@ -591,6 +626,8 @@ function updateChart() {
             let old_value = parseInt(user_res_div.innerText)
             let n = parseInt(USERS_DATA[user][resource]);
             user_res_div.innerText = n;
+            
+            //console.log(`${user} - ${resource} - ${n}`)
             if (n == 0) {
                 document.getElementById(user + "_" + resource).style.visibility = "hidden"
             } else {
@@ -688,38 +725,38 @@ function addInitialHtml() {
 
     let htmlStringLeft = `
         <div class="main-extention-container left">
-            <div class="blocks-container hidden" id="users-block-container">
+            <div class="blocks-container visible" id="users-block-container">
         </div>`
    
     let htmlStringRight = `
         <div class="main-extention-container right">
-            <div class="blocks-container stats hidden" id="stats-block-container">
+            <div class="blocks-container stats visible" id="stats-block-container">
 
                 <div class="block stats-block">
 
                     <div class="block-sub-hr"> Played cards</div>
                     <div class="devctn">
                         <div class="block-data-container dev">
-                            <img src="/dist/images/card_knight.svg" alt="">
+                            <img src="${CARD_ICON[KNIGHT]}" alt="">
                             <span id="card_count_knight" >0</span>
                         </div>
                         <div class="block-data-container dev">
-                            <img src="/dist/images/card_monopoly.svg" alt="">
+                            <img src="${CARD_ICON[MONOPOLY]}" alt="">
                             <span id="card_count_monopoly" >0/2</span>
                         </div>
                         <div class="block-data-container dev">
-                            <img src="/dist/images/card_yearofplenty.svg" alt="">
+                            <img src="${CARD_ICON[PLENTY]}" alt="">
                             <span id="card_count_yearofplenty" >0</span>
                         </div>
                         <div class="block-data-container dev">
-                            <img src="/dist/images/card_roadbuilding.svg" alt="">
+                            <img src="${CARD_ICON[ROAD2]}" alt="">
                             <span id="card_count_roadbuilding" >0</span>
                         </div>
                     </div>
 
                     <div class="block-sub-hr"> Cards in bank</div>
                     <div class="block-data-container">
-                        <img src="/dist/images/card_devcardback.svg" alt="">
+                        <img src="${CARD_ICON[DEV_CARD]}" alt="">
                         <span id="card_count_all" >25</span>
                     </div>
             
@@ -756,10 +793,13 @@ function addInitialHtml() {
         </div>`
    
     // String additions
+    console.log("Adding initial html")
     document.body.insertAdjacentHTML('afterbegin', htmlStringLeft)
     document.body.insertAdjacentHTML('afterbegin', htmlStringRight)
     document.body.insertAdjacentHTML('afterbegin', htmlMenuString)
-    document.getElementById("help_buttons_section").innerHTML += `<div class="config-button bactive" id="EXT"> </div>`
+
+
+    document.querySelector(".main_container_block_ads_included").innerHTML += `<div class="config-button bactive" id="EXT"> </div>`
 
 
     // Functionalities attachment
@@ -799,7 +839,7 @@ function addInitialHtml() {
 function addUserBlock(user) {
     let color = USERS_DATA[user]["color"]
     let is_me = (MY_USERNAME == user) ? "me" : ""
-
+    console.log("Adding user block for " + user)
     document.getElementById("users-block-container").innerHTML += `
         <div class="block user-block ${is_me}" id="userdiv_${user}">
 
@@ -815,38 +855,38 @@ function addUserBlock(user) {
           
                 <div class="user-block-counter-resource">
                     <span id="${user}_lumber">0</span>
-                    <img src="/dist/images/card_lumber.svg">
+                    <img src="${CARD_ICON[LUMBER]}">
                 </div>
                 <div class="user-block-counter-resource">
                     <span id="${user}_brick">0</span>
-                    <img src="/dist/images/card_brick.svg">
+                    <img src="${CARD_ICON[BRICK]}">
                 </div>
                 <div class="user-block-counter-resource">
                     <span id="${user}_wool">0</span>
-                    <img src="/dist/images/card_wool.svg">
+                    <img src="${CARD_ICON[WOOL]}">
                 </div>
                 <div class="user-block-counter-resource">
                     <span id="${user}_grain">0</span>
-                    <img src="/dist/images/card_grain.svg">
+                    <img src="${CARD_ICON[GRAIN]}">
                 </div>
                 <div class="user-block-counter-resource">
                     <span id="${user}_ore">0</span>
-                    <img src="/dist/images/card_ore.svg">
+                    <img src="${CARD_ICON[ORE]}">
                 </div>
 
    
             </div> <div class="user-block-section building">
 
                 <div class="user-block-counter-building">
-                    <img src="/dist/images/city_${color}.svg">
+                    <img src="${ICONS_EXTRA[CITY]}">
                     <span id="${user}_city"></span>
                 </div>
                 <div class="user-block-counter-building">
-                    <img src="/dist/images/settlement_${color}.svg">
+                    <img src="${ICONS_EXTRA[SETTLEMENT]}">
                     <span id="${user}_settlement"></span>
                 </div>
                 <div class="user-block-counter-building">
-                    <img src="/dist/images/road_${color}.svg">
+                    <img src="${ICONS_EXTRA[ROAD]}">
                     <span id="${user}_road"></span>
                 </div>
 
