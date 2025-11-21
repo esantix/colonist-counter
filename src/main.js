@@ -570,15 +570,20 @@ function parseLogMsg(logHtmlElement) {
                 };
 
                 case action.includes("stole"): {
+                    console.log(msgCtn)
                     let resource = msgCtn[2].alt.toLowerCase();
                     console.log("Resource stolen: " + resource)
-                    if (action.includes("you")) { // stole you o You stol
+                    if (action.includes("You")) { // stole from you o You stol
                         operations.push([user, +1, resource, "STOLE"]);
                         operations.push([MY_USERNAME, -1, resource, "GOT_STOLEN"]);
                     } else {
-                        let stoled = msgCtn[4].innerText;
+                        console.log(msgCtn)
+                        let stoled = msgCtn[3].textContent.trim();
+                        if (stoled == "from you"){
+                            stoled = MY_USERNAME
+                        }
                         operations.push([user, +1, resource, "STOLE"]);
-                        operations.push([stoled, -1, resource, "STOLEN"]);
+                        operations.push([stoled, -1, resource, "GOT_STOLEN"]);
                     }
                     break;
                 };
@@ -588,6 +593,7 @@ function parseLogMsg(logHtmlElement) {
     } 
     catch (e) {
         console.error("Error parsing log message:", e);
+   
     }
 
    return operations;
@@ -655,13 +661,13 @@ function log_action(action) {
         if (user == MY_USERNAME) {
             // color = "white"
         }
+        resource = action[2].toLowerCase()
         console.log(`%c ${user}%c : ${(amount == 1) ? "+1" : amount} %c${resource}%c (${flag})`, `color: ${color}; background: rgba(255, 255, 255, 0.6)`, '', `color: ${res_color};`, '')
     }
 
 
 }
 
-console.log(`%c YO%c %c:YO%c`, `color: green; background: rgba(255, 255, 255, 0.6)`,  '', `color: blue; background: rgba(255, 255, 255, 0.6)`, "")
 
 // ------------------------  RENDERING FUNCTIONS ---------------------------------- //
 
