@@ -123,6 +123,15 @@ let PROCSSED_LOGS = [
 
 ]
 
+let RESOURCE_COLOR = {
+    [LUMBER]:  "green",
+    [BRICK]:  "red",
+    [GRAIN]:  "yellow",
+    [WOOL]:  "lightgreen",
+    [ORE]:  "grey",
+
+}
+
 // ------------------------   INITIALIZATION  ---------------------------------- //
 
 initOnLoad();
@@ -198,7 +207,7 @@ function init() {
         //resume()
 
         console.log(`%c Colonist Resource counter activated`, 'background: #222; color: #bada55')
-        console.log("You are:" + MY_USERNAME)
+       // console.log("You are: " + MY_USERNAME)
 
     }
 }
@@ -256,7 +265,7 @@ function startLogObserver() {
 
     let element = document.querySelector('[class*="gameFeedsContainer"]');
     const targetNode = element;
-    console.log("Starting log observer on node: ", targetNode)
+    //console.log("Starting log observer on node: ", targetNode)
     LOG_OBSERVER.observe(targetNode, {
         attributes: true,
         childList: true,
@@ -521,6 +530,7 @@ function parseLogMsg(logHtmlElement) {
                     operations.push([user, -1, ORE, "PURCHASE_DEV"]);
                     operations.push([user, -1, GRAIN, "PURCHASE_DEV"]);
                     operations.push([user, -1, WOOL, "PURCHASE_DEV"]);
+                    USED_DEV_CARDS["BOUGHT"] += 1;
                     break;
                 };
 
@@ -627,6 +637,8 @@ function execute_ops(operations) {
    // console.log(USERS_DATA)
 }
 
+
+
 function log_action(action) {
     // Log actions with format
     let user = action[0];
@@ -634,14 +646,22 @@ function log_action(action) {
     let resource = action[2];
     let flag = action[3];
 
+    let res_color = RESOURCE_COLOR[resource]
+
     if (flag == "DICE_DATA") {
         console.log(`%c Turn ${TURNS}): ${user} rolled ${action[1] + action[2]}`, 'background: #222; color: #bada55')
     } else {
-        console.log(`%c ${user}%c : ${(amount == 1) ? "+1" : amount} ${resource} (${flag})`, ` background: rgba(255, 255, 255, 0.6)`, '')
+        let color = USER_COLORMAP[user]
+        if (user == MY_USERNAME) {
+            // color = "white"
+        }
+        console.log(`%c ${user}%c : ${(amount == 1) ? "+1" : amount} %c${resource}%c (${flag})`, `color: ${color}; background: rgba(255, 255, 255, 0.6)`, '', `color: ${res_color};`, '')
     }
 
 
 }
+
+console.log(`%c YO%c %c:YO%c`, `color: green; background: rgba(255, 255, 255, 0.6)`,  '', `color: blue; background: rgba(255, 255, 255, 0.6)`, "")
 
 // ------------------------  RENDERING FUNCTIONS ---------------------------------- //
 
@@ -856,11 +876,11 @@ function addInitialHtml() {
         </div>`
    
     // String additions
-    console.log("Adding htmlStringLeft")
+    // console.log("Adding htmlStringLeft")
     document.body.insertAdjacentHTML('afterbegin', htmlStringLeft)
-    console.log("Adding htmlStringRight")
+    // console.log("Adding htmlStringRight")
     document.body.insertAdjacentHTML('afterbegin', htmlStringRight)
-    console.log("Adding htmlMenuString")
+    // console.log("Adding htmlMenuString")
     document.body.insertAdjacentHTML('afterbegin', htmlMenuString)
 
 
@@ -900,7 +920,7 @@ function addInitialHtml() {
 
 function addUserBlock(user) {
     let is_me = (MY_USERNAME == user) ? "me" : ""
-    console.log("Adding user block for " + user)
+    // console.log("Adding user block for " + user)
     document.getElementById("users-block-container").innerHTML += `
         <div class="block user-block ${is_me}" id="userdiv_${user}">
 
