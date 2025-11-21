@@ -1,16 +1,11 @@
-# Colonist.io log parser
+# Colonist.io 1v1 - log tracker
 Chrome extention for [Colonist.io](https://colonist.io/) game.
-
-
-## DISCLAIMER
-
-#### Currently works for 1v1 without trade. Trade is private so count will loose track of cards.
 
 
 ## Description
 Parses public log and displays data on charts. Also hides ads. 
 
-![demo](.img/image.png)
+
 
 
 **Disclaimer 1**: Review Colonist supported version before using. Log UI and messages might change altering completely the count of resources. 
