@@ -17,11 +17,11 @@ const ORE = "ore";
 const UNKNOWN_CARD = "card";
 
 // Dev card log keyword
-const MONOPOLY = "Monopoly";
-const KNIGHT = "Knight";
-const PLENTY = "Year of Plenty";
-const ROAD2 = "Road Building";
-const VP = "Vp";
+const MONOPOLY = "monopoly";
+const KNIGHT = "knight";
+const PLENTY = "year of plenty";
+const ROAD2 = "road building";
+const VP = "vp";
 const DEV_CARD = "development card";
 
 // Game configuration variables
@@ -40,9 +40,9 @@ const CARD_ICON = {
     [UNKNOWN_CARD]: "/dist/assets/card_devcardback.92569a1abd04a8c1c17e.svg",
     [DEV_CARD]: "/dist/assets/card_devcardback.92569a1abd04a8c1c17e.svg",
     [KNIGHT]: "/dist/assets/card_knight.a58573f2154fa93a6319.svg",
-    [MONOPOLY]: "/dist/assets/card_devcardback.92569a1abd04a8c1c17e.svg",
-    [PLENTY]: "/dist/assets/card_devcardback.92569a1abd04a8c1c17e.svg",
-    [ROAD2]: "/dist/assets/card_devcardback.92569a1abd04a8c1c17e.svg",
+    [MONOPOLY]: "/dist/assets/card_monopoly.dfac189aaff62e271093.svg",
+    [PLENTY]: "/dist/assets/card_yearofplenty.3df210b5455b7438db09.svg",
+    [ROAD2]: "/dist/assets/card_roadbuilding.994e8f21698ce6c350bd.svg",
     [VP]: "/dist/assets/card_devcardback.92569a1abd04a8c1c17e.svg"
 };
 
@@ -140,13 +140,12 @@ function initOnLoad() {
         for (let mutation of mutationsList) {
             if (mutation.type === 'childList' && mutation.addedNodes.length > 0) {
                 for (let node of mutation.addedNodes) {
-                    if (node.className){
-
-                        if (node.nodeType === 1 && node.className.includes('lobby-chat-text-icon') ) {
+                    if (node.id){
+                        //console.log(node)
+                        if (node.id == 'ui-game' ) {
                             //console.clear()
                             init()
                             LOG_LOADED_OBSERVER.disconnect();
-                            break;
                         }
                     }
                 }
@@ -188,15 +187,15 @@ function clearAds() {
 }
 
 function init() {
-    clearAds()
+    //clearAds()
     if (!IS_OBSERVER_ACTIVE) {
 
         addInitialHtml()
         // TOPBAR.appendChild(STATS_DATA_WRAPPER);
-        MY_USERNAME = document.getElementById('header_profile_username').innerText;
-        clearAds()
+        MY_USERNAME = "esantix";
+        //clearAds()
         startLogObserver();
-        resume()
+        //resume()
 
         console.log(`%c Colonist Resource counter activated`, 'background: #222; color: #bada55')
         console.log("You are:" + MY_USERNAME)
@@ -219,16 +218,14 @@ function resume() {
 }
 
 function startLogObserver() {
-    clearAds()
+    //clearAds()
     // Refresh data on changes on log element 
 
     const LOG_OBSERVER = new MutationObserver(function(mutationsList, observer) {
-
         for (let mutation of mutationsList) {
+            //console.log("Log mutation detected")
             if (mutation.type === "childList") {
                 mutation.addedNodes.forEach(node => {
-                    
-                    
                     
                     
                     if (GAME_ENDED) {
@@ -259,6 +256,7 @@ function startLogObserver() {
 
     let element = document.querySelector('[class*="gameFeedsContainer"]');
     const targetNode = element;
+    console.log("Starting log observer on node: ", targetNode)
     LOG_OBSERVER.observe(targetNode, {
         attributes: true,
         childList: true,
@@ -292,61 +290,79 @@ function resourcesChatMsg() {
     return msg
 }
 
+function addUser(user, msgCtn) {
+    let color = msgCtn.children[0].style.color // Solo al existir log puedo scrappear color de usuario
+            USER_COLORMAP[user] = color;
+            if (user) {
+                if (!(user in USERS_DATA)) {
+                    USERS_DATA[user] = {
+                        "color": COLOR_CODE[color],
+                        "7": 0,
+                        [ORE]: 0,
+                        [WOOL]: 0,
+                        [BRICK]: 0,
+                        [GRAIN]: 0,
+                        [LUMBER]: 0,
+                        [ROAD]: 0,
+                        [CITY]: 0,
+                        [SETTLEMENT]: 0,
+                        [UNKNOWN_CARD]: 0
+                    };
+                }
+            }
+}
+
 function parseLogMsg(logHtmlElement) {
-    
+
+    // Operations
+    var operations = [];
+
+
+    // Clear ads regularly
+    clearAds()
+
+    // Avoid duplicate mesage processing
     let dataindex = logHtmlElement.getAttribute("data-index")
     if (PROCSSED_LOGS.includes(dataindex)) {
-        return []
+        return operations
     } else {
         PROCSSED_LOGS.push(dataindex)
     }
+
     // Parses html message into a list of operations
     // Return list of [user, amount_to_add, resource, flag]
-    clearAds()
+    
     try {
         if (!logHtmlElement.children[0].children[1]) {
-            return [];
+            return operations;
         }
     }
     catch (e) {
-        return [];
+        return operations;
     }
-    var operations = [];
-    try {
 
+
+    
+    try {
         let msgCtn = logHtmlElement.children[0].children[1]
 
         try {
             var user = msgCtn.children[0].innerText.trim(); // no funciona para You Stole
         }
         catch (e) {     
-            var user = "";
+            return operations;
         }
 
+    
+        addUser(user, msgCtn);
+        
 
-        let color = msgCtn.children[0].style.color // Solo al existir log puedo scrappear color de usuario
-        USER_COLORMAP[user] = color;
+        msgCtn = msgCtn.childNodes;
+        // console.log(msgCtn)
 
-        if (user) {
-            if (!(user in USERS_DATA)) {
-                USERS_DATA[user] = {
-                    "color": COLOR_CODE[color],
-                    "7": 0,
-                    [ORE]: 0,
-                    [WOOL]: 0,
-                    [BRICK]: 0,
-                    [GRAIN]: 0,
-                    [LUMBER]: 0,
-                    [ROAD]: 0,
-                    [CITY]: 0,
-                    [SETTLEMENT]: 0,
-                    [UNKNOWN_CARD]: 0
-                };
-            }
-        }
-
-        msgCtn = msgCtn.childNodes
-
+        if (!msgCtn) {
+            return operations;
+        } 
 
         //USER_ICON[user] = logHtmlElement.children[0].src
 
@@ -363,10 +379,13 @@ function parseLogMsg(logHtmlElement) {
             operations.push([stolen, -1, resource, "GOT_STOLEN"]);
 
         } else {
-            let action = msgCtn[1].textContent.trim(); // Accion
+
+
+            let action = msgCtn[1].textContent.trim().toLowerCase(); // Accion
+            
             //console.log("Action:" + action)
-            switch (action) {
-                case "rolled": {
+            switch (true) {
+                case action == "rolled": {
                     TURNS += 1;
 
                     let d1 = parseInt(msgCtn[2].alt.split("_")[1]);
@@ -375,10 +394,16 @@ function parseLogMsg(logHtmlElement) {
                     break;
                 };
 
-                case "received starting resources": {
+                case  action == "received starting resources": {
                     TURNS += 2;
-                    for (let i = 2; i < msgCtn.length; i++) {
-                        let resource = msgCtn[i].alt;
+                    for (let i = 0; i < msgCtn.length + 10  ; i++) {
+                 
+                        if (msgCtn[i]?.alt === undefined) {
+                            continue;
+                        }
+
+                        let resource = msgCtn[i].alt.toLowerCase();
+                        console.log("Starting resource: " + resource + " for user " + user)
                         if (resource) {
                             operations.push([user, +1, resource, "STARTING"]);
                         }
@@ -386,8 +411,11 @@ function parseLogMsg(logHtmlElement) {
                     break;
                 };
 
-                case "used": { // Uso de carta Monopoly. El siguiente mensaje muestra que se robó
-                    let used_card = msgCtn[2].innerText.trim();
+                case  action == "used": { // Uso de carta Monopoly. El siguiente mensaje muestra que se robó
+                    console.log("Dev card used")
+                    console.log(msgCtn)
+                    let used_card = msgCtn[2].innerText.trim().toLowerCase();
+
                     if (used_card == MONOPOLY) {
                         PREVIOUS_IS_MONOPOLY = true;
                     }
@@ -396,18 +424,29 @@ function parseLogMsg(logHtmlElement) {
                     break;
                 };
 
-                case "got": { // Entrega por dado o Year of Plenty (+2)
-                    for (let i = 2; i < msgCtn.length; i++) {
-                        let resource = msgCtn[i].alt;
+                case  action == "got": { // Entrega por dado o Year of Plenty (+2)
+                    for (let i = 0; i < msgCtn.length + 10; i++) {
+                   
+                        if (msgCtn[i]?.alt === undefined) {
+                            continue;
+                        }
+       
+                        let resource = msgCtn[i].alt.toLowerCase();
                         if (resource) {
                             operations.push([user, +1, resource, "RECIEVED_FROM_BANK"]);
                         }
                     }
                     break;
-                }
-                case "took from bank": {
-                    for (let i = 2; i < msgCtn.length; i++) {
-                        let resource = msgCtn[i].alt;
+                };
+                
+                case  action == "took from bank": {
+                    for (let i = 0; i < msgCtn.length + 10; i++) {
+                
+                        if (msgCtn[i]?.alt === undefined) {
+                            continue;
+                        }
+
+                        let resource = msgCtn[i].alt.toLowerCase();
                         if (resource) {
                             operations.push([user, +1, resource, "TOOK_FROM_BANK"]);
                         }
@@ -415,9 +454,15 @@ function parseLogMsg(logHtmlElement) {
                     break;
                 };
 
-                case "discarded": { // Descarte por tener mas del limite en dado 7
-                    for (let i = 2; i < msgCtn.length; i++) {
-                        let resource = msgCtn[i].alt;
+                case  action == "discarded": { // Descarte por tener mas del limite en dado 7
+                    
+                    for (let i = 0; i < msgCtn.length +10; i++) {
+                    
+                        if (msgCtn[i]?.alt == undefined) {
+                            continue;
+                        }
+     
+                        let resource = msgCtn[i].alt.toLowerCase();
                         if (resource) {
                             operations.push([user, -1, resource, "DISCARD"]);
                         }
@@ -425,13 +470,23 @@ function parseLogMsg(logHtmlElement) {
                     break;
                 };
 
-                case "gave bank": {
+                case  action == "gave bank": {
                     let op = -1;
-                    for (let i = 2; i < msgCtn.length; i++) {
+                    for (let i = 2; i < msgCtn.length + 10; i++) {
+
+                        if (msgCtn[i] == undefined) {
+                            continue;
+                        }
+
                         if (msgCtn[i].textContent.trim() == "and took") {
                             op = +1;
                         } else {
-                            let resource = msgCtn[i].alt;
+                     
+                            if (msgCtn[i]?.alt == undefined) {
+                                continue;
+                            }
+                   
+                            let resource = msgCtn[i].alt.toLowerCase();
                             if (resource) {
                                 operations.push([user, op, resource, "TRADE_BANK"]);
                             }
@@ -440,7 +495,7 @@ function parseLogMsg(logHtmlElement) {
                     break;
                 };
 
-                case "gave": { // Player trade
+                case  action == "gave": { // Player trade
                     let l = parseInt(msgCtn.length) - 1;
                     let user2 = msgCtn[l].innerText;
 
@@ -452,7 +507,7 @@ function parseLogMsg(logHtmlElement) {
                             taker = user2;
                             giver = user;
                         } else {
-                            let resource = msgCtn[i].alt;
+                            let resource = msgCtn[i].alt.toLowerCase();
 
                             operations.push([taker, -1, resource, "TRADE_PLAYERS_GIVE"]);
                             operations.push([giver, +1, resource, "TRADE_PLAYERS_RECIEVE"]);
@@ -461,23 +516,32 @@ function parseLogMsg(logHtmlElement) {
                     break;
                 };
 
+                case  action == "bought": { // Only dev???
+        
+                    
+                    operations.push([user, -1, ORE, ""]);
+                    operations.push([user, -1, GRAIN, ""]);
+                    operations.push([user, -1, WOOL, ""]);
+                    break;
+            };
 
-
-                case "built a Road": { // Build building
+                case  action == "built a road": { // Build building
         
                         USERS_DATA[user][ROAD] += 1
                         operations.push([user, -1, LUMBER, "PURCHASE_ROAD"]);
                         operations.push([user, -1, BRICK, "PURCHASE_ROAD"]);
                         break;
                 };
-                case "built a City": {
+                
+                case  action == "built a city": {
                         USERS_DATA[user][CITY] += 1
                         USERS_DATA[user][SETTLEMENT] -= 1
                         operations.push([user, -2, GRAIN, "PURCHASE_CITY"]);
                         operations.push([user, -3, ORE, "PURCHASE_CITY"]); 
                         break;
                 };
-                case "built a Settlement": {
+                
+                case  action == "built a settlement": {
                         USERS_DATA[user][SETTLEMENT] += 1
                         operations.push([user, -1, LUMBER, "PURCHASE_SETTLEMENT"]);
                         operations.push([user, -1, BRICK, "PURCHASE_SETTLEMENT"]);
@@ -486,19 +550,22 @@ function parseLogMsg(logHtmlElement) {
                         break;
                 };
 
-                case "placed a Road": { // Initial free
+                case  action == "placed a road": { // Initial free
                     USERS_DATA[user][ROAD] += 1
                     break;
                 };
 
-                case "placed a Settlement": { // Initial free
+                case  action == "placed a settlement": { // Initial free
                     USERS_DATA[user][SETTLEMENT] += 1
                     break;
                 };
 
-                case "stole": {
-                    let resource = msgCtn[2].alt;
-                    if (msgCtn.length == 4) { // stole you o You stol
+                case action.includes("stole"): {
+                    console.log("--------------------------------------")
+                    console.log(msgCtn)
+                    let resource = msgCtn[2].alt.toLowerCase();
+                    console.log("Resource stolen: " + resource)
+                    if (action.includes("You")) { // stole you o You stol
                         operations.push([user, +1, resource, "STOLE"]);
                         operations.push([MY_USERNAME, -1, resource, "GOT_STOLEN"]);
                     } else {
@@ -511,9 +578,13 @@ function parseLogMsg(logHtmlElement) {
             }
         }
 
-   } catch (e) {}
+    } 
+    catch (e) {
+        console.error("Error parsing log message:", e);
+        console.log(msgCtn)
+    }
 
-    return operations;
+   return operations;
 }
 
 function execute_ops(operations) {
@@ -570,11 +641,7 @@ function log_action(action) {
     if (flag == "DICE_DATA") {
         console.log(`%c Turn ${TURNS}): ${user} rolled ${action[1] + action[2]}`, 'background: #222; color: #bada55')
     } else {
-        let color = USER_COLORMAP[user]
-        if (user == MY_USERNAME) {
-            // color = "white"
-        }
-        console.log(`%c ${user}%c : ${(amount == 1) ? "+1" : amount} ${resource} (${flag})`, `color: ${color}; background: rgba(255, 255, 255, 0.6)`, '')
+        console.log(`%c ${user}%c : ${(amount == 1) ? "+1" : amount} ${resource} (${flag})`, ` background: rgba(255, 255, 255, 0.6)`, '')
     }
 
 
@@ -793,13 +860,12 @@ function addInitialHtml() {
         </div>`
    
     // String additions
-    console.log("Adding initial html")
+    console.log("Adding htmlStringLeft")
     document.body.insertAdjacentHTML('afterbegin', htmlStringLeft)
+    console.log("Adding htmlStringRight")
     document.body.insertAdjacentHTML('afterbegin', htmlStringRight)
+    console.log("Adding htmlMenuString")
     document.body.insertAdjacentHTML('afterbegin', htmlMenuString)
-
-
-    document.querySelector(".main_container_block_ads_included").innerHTML += `<div class="config-button bactive" id="EXT"> </div>`
 
 
     // Functionalities attachment
@@ -832,12 +898,11 @@ function addInitialHtml() {
     document.getElementById("stats").onclick = hiderButtonFuntion("stats", "#stats-block-container")
     document.getElementById("all").onclick = hiderButtonFuntion("all", "#users-block-container")
     // document.getElementById("bully-msg").onclick = bully
-    document.getElementById("EXT").onclick = switchMenu
+  
 
 }
 
 function addUserBlock(user) {
-    let color = USERS_DATA[user]["color"]
     let is_me = (MY_USERNAME == user) ? "me" : ""
     console.log("Adding user block for " + user)
     document.getElementById("users-block-container").innerHTML += `
