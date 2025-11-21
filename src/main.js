@@ -412,10 +412,9 @@ function parseLogMsg(logHtmlElement) {
                 };
 
                 case  action == "used": { // Uso de carta Monopoly. El siguiente mensaje muestra que se robó
-                    console.log("Dev card used")
-                    console.log(msgCtn)
-                    let used_card = msgCtn[2].innerText.trim().toLowerCase();
-
+                    // let used_card = msgCtn[2].textContent.trim().toLowerCase();
+                    let used_card = logHtmlElement.children[0].children[2].textContent.trim().toLowerCase();
+                              
                     if (used_card == MONOPOLY) {
                         PREVIOUS_IS_MONOPOLY = true;
                     }
@@ -519,11 +518,11 @@ function parseLogMsg(logHtmlElement) {
                 case  action == "bought": { // Only dev???
         
                     
-                    operations.push([user, -1, ORE, ""]);
-                    operations.push([user, -1, GRAIN, ""]);
-                    operations.push([user, -1, WOOL, ""]);
+                    operations.push([user, -1, ORE, "PURCHASE_DEV"]);
+                    operations.push([user, -1, GRAIN, "PURCHASE_DEV"]);
+                    operations.push([user, -1, WOOL, "PURCHASE_DEV"]);
                     break;
-            };
+                };
 
                 case  action == "built a road": { // Build building
         
@@ -561,11 +560,9 @@ function parseLogMsg(logHtmlElement) {
                 };
 
                 case action.includes("stole"): {
-                    console.log("--------------------------------------")
-                    console.log(msgCtn)
                     let resource = msgCtn[2].alt.toLowerCase();
                     console.log("Resource stolen: " + resource)
-                    if (action.includes("You")) { // stole you o You stol
+                    if (action.includes("you")) { // stole you o You stol
                         operations.push([user, +1, resource, "STOLE"]);
                         operations.push([MY_USERNAME, -1, resource, "GOT_STOLEN"]);
                     } else {
@@ -581,7 +578,6 @@ function parseLogMsg(logHtmlElement) {
     } 
     catch (e) {
         console.error("Error parsing log message:", e);
-        console.log(msgCtn)
     }
 
    return operations;
