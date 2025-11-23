@@ -1,14 +1,14 @@
 {
     "manifest_version": 3,
-    "name": "Colonist resource counter",
+    "name": "Colonist.io 1v1 resource counter",
     "description": "Keep count of player resources by log inspection",
-    "author":"santiago93echevarria@gmail.com",
+    "author":"Santiago Echevarria",
       "permissions": [
         "cookies",
         "storage",
         "webRequest"
       ],
-      "version": "1.2.0",
+      "version": "3.0.0",
       "content_scripts": [{
           "matches": ["https://colonist.io/*"],
           "js": ["main.js"],
